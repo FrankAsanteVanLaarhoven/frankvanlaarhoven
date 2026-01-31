@@ -211,7 +211,7 @@ export function useVoiceCommands({ onCommand, language }: VoiceCommandProps) {
                  // ignore already started errors
              }
          } else {
-             setIsListening(false);
+             // System is OFF, do nothing.
          }
      };
 
@@ -221,7 +221,6 @@ export function useVoiceCommands({ onCommand, language }: VoiceCommandProps) {
       if (recognitionRef.current) {
           try {
             setVoiceMode('STANDBY');
-            setIsListening(true);
             recognitionRef.current.start();
           } catch(e) { console.log(e); }
       }
@@ -229,9 +228,10 @@ export function useVoiceCommands({ onCommand, language }: VoiceCommandProps) {
 
   const stopTheSystem = useCallback(() => {
       setVoiceMode('OFF');
-      setIsListening(false);
       recognitionRef.current?.stop();
   }, []);
+
+  const isListening = voiceMode !== 'OFF';
 
   return { isListening, isSupported, transcript, interimTranscript, startTheSystem, stopTheSystem, speak, isSpeaking, voiceMode };
 }

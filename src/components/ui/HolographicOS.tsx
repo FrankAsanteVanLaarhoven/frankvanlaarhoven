@@ -12,7 +12,6 @@ export default function HolographicOS() {
   const [activeWindow, setActiveWindow] = useState<WindowId>(null);
   const [language, setLanguage] = useState<LanguageCode>('en-US');
 
-  const { playHover, playClick } = useSoundEffects();
 
   const toggleWindow = (id: WindowId) => {
     setActiveWindow(activeWindow === id ? null : id);
@@ -78,7 +77,7 @@ export default function HolographicOS() {
   }, [language, speak]);
   /* eslint-enable react-hooks/exhaustive-deps */
 
-  const { isListening, isSupported, startTheSystem, stopTheSystem, speak, interimTranscript, voiceMode } = useVoiceCommands({ onCommand: handleVoiceCommand, language });
+  const { isListening, isSupported, startTheSystem, stopTheSystem, interimTranscript, voiceMode } = useVoiceCommands({ onCommand: handleVoiceCommand, language });
   const { playHover, playClick } = useSoundEffects();
 
   return (
