@@ -19,6 +19,7 @@ export default function SplineRobotScene() {
         scene="https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode"
         onLoad={() => setLoaded(true)}
         className={styles.splineCanvas}
+        style={{ pointerEvents: 'none' }}
       />
       
       {/* Neural Interface Overlay (HUD) */}

@@ -8,6 +8,8 @@
   pointer-events: none; /* Let clicks pass through to 3D scene where no UI exists */
   overflow: hidden;
   font-family: var(--font-primary);
+  /* Ensure no transforms cause shifting */
+  transform: none; 
 }
 
 .toolbar {
