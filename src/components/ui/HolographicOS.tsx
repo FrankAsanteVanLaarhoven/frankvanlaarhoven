@@ -195,8 +195,8 @@ export default function HolographicOS() {
         {activeWindow === "terminal" && (
             <motion.div
                 className={`${styles.window} ${styles.terminalPanel}`}
-                initial={{ y: -50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
                 drag
                 dragMomentum={false}
             >
