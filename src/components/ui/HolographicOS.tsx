@@ -15,23 +15,53 @@ export default function HolographicOS() {
     setActiveWindow(activeWindow === id ? null : id);
   };
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   const handleVoiceCommand = useCallback((cmd: string) => {
-    if (cmd.includes("open books") || cmd.includes("nexus books")) setActiveWindow("books");
-    if (cmd.includes("open services") || cmd.includes("vla services")) setActiveWindow("services");
-    if (cmd.includes("open research") || cmd.includes("research lab")) setActiveWindow("research");
-    if (cmd.includes("open terminal") || cmd.includes("command line")) setActiveWindow("terminal");
-    if (cmd.includes("close") || cmd.includes("close all")) setActiveWindow(null);
+    // Conversational Responses
+    if (cmd.includes("open books") || cmd.includes("nexus books")) {
+        speak("Accessing Neural Archives.");
+        setActiveWindow("books");
+    }
+    if (cmd.includes("open services") || cmd.includes("vla services")) {
+        speak("Connecting to VLA Robotics Services.");
+        setActiveWindow("services");
+    }
+    if (cmd.includes("open research") || cmd.includes("research lab")) {
+        speak("Decrypting Research Laboratory Data.");
+        setActiveWindow("research");
+    }
+    if (cmd.includes("open terminal") || cmd.includes("command line")) {
+        speak("Initializing Command Line Interface.");
+        setActiveWindow("terminal");
+    }
+    if (cmd.includes("close") || cmd.includes("close all")) {
+        speak("Terminating active sessions.");
+        setActiveWindow(null);
+    }
+    if (cmd.includes("hello") || cmd.includes("hi")) {
+        speak("Greetings. I am ready for your command.");
+    }
+    if (cmd.includes("status")) {
+        speak("All systems nominal. VLA Guard is active.");
+    }
   }, []);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
-
-
-  const { isListening, isSupported, toggleListening } = useVoiceCommands({ onCommand: handleVoiceCommand });
+  const { isListening, isSupported, toggleListening, speak, interimTranscript } = useVoiceCommands({ onCommand: handleVoiceCommand });
   const { playHover, playClick } = useSoundEffects();
 
   return (
     <div className={styles.osLayer}>
       {/* Dynamic "Ephemeral" Toolbar */}
       <nav className={styles.toolbar}>
+        {/* Real-time Voice Feedback Display */}
+        {isListening && (
+            <div className={styles.voiceFeedback}>
+                <span className={styles.waveform}>|||||</span>
+                <span className={styles.transcript}>{interimTranscript || "Listening..."}</span>
+            </div>
+        )}
+
         {isSupported && (
             <button 
                 onClick={() => { playClick(); toggleListening(); }} 
