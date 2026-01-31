@@ -78,6 +78,10 @@ export function useVoiceCommands({ onCommand }: VoiceCommandProps) {
       };
 
       recognitionRef.current = recognition;
+      
+      return () => {
+        recognition.abort();
+      };
     }
   }, [onCommand]); // Re-bind if onCommand changes, though simpler to use a ref for onCommand if it changes often
 

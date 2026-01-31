@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import styles from "./HolographicOS.module.scss";
 import { useVoiceCommands } from "../../hooks/useVoiceCommands";
 import { useSoundEffects } from "../../hooks/useSoundEffects";
@@ -15,13 +15,13 @@ export default function HolographicOS() {
     setActiveWindow(activeWindow === id ? null : id);
   };
 
-  const handleVoiceCommand = (cmd: string) => {
+  const handleVoiceCommand = useCallback((cmd: string) => {
     if (cmd.includes("open books") || cmd.includes("nexus books")) setActiveWindow("books");
     if (cmd.includes("open services") || cmd.includes("vla services")) setActiveWindow("services");
     if (cmd.includes("open research") || cmd.includes("research lab")) setActiveWindow("research");
     if (cmd.includes("open terminal") || cmd.includes("command line")) setActiveWindow("terminal");
     if (cmd.includes("close") || cmd.includes("close all")) setActiveWindow(null);
-  };
+  }, []);
 
 
 
