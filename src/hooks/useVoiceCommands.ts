@@ -34,17 +34,17 @@ declare global {
 
 interface VoiceCommandProps {
   onCommand: (command: string) => void;
+  language: LanguageCode;
 }
 
 export type LanguageCode = 'en-US' | 'de-DE' | 'nl-NL' | 'es-ES' | 'pt-BR' | 'zh-CN' | 'ar-SA';
 
-export function useVoiceCommands({ onCommand }: VoiceCommandProps) {
+export function useVoiceCommands({ onCommand, language }: VoiceCommandProps) {
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [language, setLanguage] = useState<LanguageCode>('en-US');
   
   // Use a ref to keep one instance of SpeechRecognition
   const recognitionRef = (typeof window !== 'undefined') ? 
@@ -85,7 +85,7 @@ export function useVoiceCommands({ onCommand }: VoiceCommandProps) {
       
       recognition.continuous = false; 
       recognition.interimResults = true; 
-      recognition.lang = language; // Dynamic language
+      recognition.lang = language; // Dynamic language from prop
 
       recognition.onresult = (event: any) => {
         let interim = '';
@@ -128,7 +128,7 @@ export function useVoiceCommands({ onCommand }: VoiceCommandProps) {
         recognition.abort();
       };
     }
-  }, [onCommand, language]); // Re-init when language changes
+  }, [onCommand, language]);
 
   const toggleListening = useCallback(() => {
     if (!isSupported || !recognitionRef.current) return;
@@ -139,7 +139,6 @@ export function useVoiceCommands({ onCommand }: VoiceCommandProps) {
     } else {
       try {
         setInterimTranscript('');
-        // Ensure lang is set before starting (though useEffect handles init)
         if (recognitionRef.current) recognitionRef.current.lang = language;
         recognitionRef.current.start();
         setIsListening(true);
@@ -149,5 +148,5 @@ export function useVoiceCommands({ onCommand }: VoiceCommandProps) {
     }
   }, [isListening, isSupported, language]);
 
-  return { isListening, isSupported, transcript, interimTranscript, toggleListening, speak, isSpeaking, language, setLanguage };
+  return { isListening, isSupported, transcript, interimTranscript, toggleListening, speak, isSpeaking };
 }
