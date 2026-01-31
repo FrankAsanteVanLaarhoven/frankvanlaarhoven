@@ -78,30 +78,41 @@ export default function HolographicOS() {
   }, [language, speak]);
   /* eslint-enable react-hooks/exhaustive-deps */
 
-  const { isListening, isSupported, toggleListening, interimTranscript } = useVoiceCommands({ onCommand: handleVoiceCommand, language });
-  
+  const { isListening, isSupported, startTheSystem, stopTheSystem, speak, interimTranscript, voiceMode } = useVoiceCommands({ onCommand: handleVoiceCommand, language });
+  const { playHover, playClick } = useSoundEffects();
+
   return (
     <div className={styles.osLayer}>
       {/* Dynamic "Ephemeral" Toolbar */}
       <nav className={styles.toolbar}>
         {/* Real-time Voice Feedback Display */}
-        {isListening && (
+        {voiceMode !== 'OFF' && (
             <div className={styles.voiceFeedback}>
-                <span className={styles.waveform}>|||||</span>
-                <span className={styles.transcript}>{interimTranscript || "Listening..."}</span>
+                <span className={`${styles.waveform} ${voiceMode === 'ACTIVE' ? styles.active : ''}`}>
+                    {voiceMode === 'ACTIVE' ? '||||||||' : '...'}
+                </span>
+                <span className={styles.transcript}>
+                    {voiceMode === 'STANDBY' ? "Waiting for 'Franky'..." : (interimTranscript || "Listening...")}
+                </span>
             </div>
         )}
 
         {isSupported && (
             <button 
-                onClick={() => { playClick(); toggleListening(); }} 
+                onClick={() => { 
+                    playClick(); 
+                    if (voiceMode === 'OFF') startTheSystem();
+                    else stopTheSystem();
+                }} 
                 onMouseEnter={playHover}
-                className={`${styles.toolButton} ${isListening ? styles.listening : ''}`} 
-                style={isListening ? { color: '#ff5f5f', textShadow: '0 0 10px #ff5f5f' } : {}}
+                className={`${styles.toolButton} ${voiceMode !== 'OFF' ? styles.listening : ''}`} 
+                style={voiceMode === 'ACTIVE' ? { color: '#00ff9d', textShadow: '0 0 10px #00ff9d' } : {}}
             >
-                <span className={styles.icon}>{isListening ? '🎙️' : '🎤'}</span>
+                <span className={styles.icon}>{voiceMode === 'OFF' ? '🔇' : (voiceMode === 'ACTIVE' ? '🎙️' : '👂')}</span>
                 {/* Show Language Code */}
-                <span className={styles.label}>{isListening ? 'ON' : 'VOICE'} [{language.split('-')[0].toUpperCase()}]</span>
+                <span className={styles.label}>
+                    {voiceMode === 'OFF' ? 'INIT SYSTEM' : (voiceMode === 'ACTIVE' ? 'LISTENING' : 'STANDBY')} [{language.split('-')[0].toUpperCase()}]
+                </span>
             </button>
         )}
         <button 

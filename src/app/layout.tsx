@@ -64,7 +64,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${syncopate.variable}`}>
+      <body className={`${inter.variable} ${syncopate.variable}`} suppressHydrationWarning>
         {children}
       </body>
     </html>
