@@ -36,12 +36,15 @@ interface VoiceCommandProps {
   onCommand: (command: string) => void;
 }
 
+export type LanguageCode = 'en-US' | 'de-DE' | 'nl-NL' | 'es-ES' | 'pt-BR' | 'zh-CN' | 'ar-SA';
+
 export function useVoiceCommands({ onCommand }: VoiceCommandProps) {
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [language, setLanguage] = useState<LanguageCode>('en-US');
   
   // Use a ref to keep one instance of SpeechRecognition
   const recognitionRef = (typeof window !== 'undefined') ? 
@@ -51,13 +54,17 @@ export function useVoiceCommands({ onCommand }: VoiceCommandProps) {
 
   const speak = useCallback((text: string) => {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
-        // Cancel any current speech
         window.speechSynthesis.cancel();
         
         const utterance = new SpeechSynthesisUtterance(text);
-        // Select a futuristic voice if available (usually Google US English or similar)
         const voices = window.speechSynthesis.getVoices();
-        const preferredVoice = voices.find(v => v.name.includes("Google US English")) || voices[0];
+        
+        // Find a voice that matches the current language
+        const langCode = language.split('-')[0]; // 'en', 'de', etc.
+        const preferredVoice = voices.find(v => v.lang.startsWith(langCode) && v.name.includes("Google")) 
+                            || voices.find(v => v.lang.startsWith(langCode))
+                            || voices[0];
+
         if (preferredVoice) utterance.voice = preferredVoice;
         
         utterance.pitch = 1.0;
@@ -67,22 +74,18 @@ export function useVoiceCommands({ onCommand }: VoiceCommandProps) {
         
         window.speechSynthesis.speak(utterance);
     }
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition)) {
       setIsSupported(true);
       
-      // Initialize the recognition instance once
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       const recognition = new SpeechRecognition();
       
-      recognition.continuous = false; // "false" means it stops after one final sentence, which is usually good for commands
-      // For "real-time" feel we might want continuous=true, but that requires manual stopping. 
-      // Let's stick to false for now but process interim results for visual feedback.
-      
-      recognition.interimResults = true; // Enable real-time feedback
-      recognition.lang = 'en-US';
+      recognition.continuous = false; 
+      recognition.interimResults = true; 
+      recognition.lang = language; // Dynamic language
 
       recognition.onresult = (event: any) => {
         let interim = '';
@@ -101,7 +104,7 @@ export function useVoiceCommands({ onCommand }: VoiceCommandProps) {
         if (final) {
             const text = final.toLowerCase();
             setTranscript(text);
-            setInterimTranscript(''); // Clear interim once final
+            setInterimTranscript(''); 
             console.log('Voice Command:', text);
             onCommand(text);
             setIsListening(false); 
@@ -125,7 +128,7 @@ export function useVoiceCommands({ onCommand }: VoiceCommandProps) {
         recognition.abort();
       };
     }
-  }, [onCommand]); 
+  }, [onCommand, language]); // Re-init when language changes
 
   const toggleListening = useCallback(() => {
     if (!isSupported || !recognitionRef.current) return;
@@ -136,13 +139,15 @@ export function useVoiceCommands({ onCommand }: VoiceCommandProps) {
     } else {
       try {
         setInterimTranscript('');
+        // Ensure lang is set before starting (though useEffect handles init)
+        if (recognitionRef.current) recognitionRef.current.lang = language;
         recognitionRef.current.start();
         setIsListening(true);
       } catch (e) {
         console.error("Speech recognition start error:", e);
       }
     }
-  }, [isListening, isSupported]);
+  }, [isListening, isSupported, language]);
 
-  return { isListening, isSupported, transcript, interimTranscript, toggleListening, speak, isSpeaking };
+  return { isListening, isSupported, transcript, interimTranscript, toggleListening, speak, isSpeaking, language, setLanguage };
 }

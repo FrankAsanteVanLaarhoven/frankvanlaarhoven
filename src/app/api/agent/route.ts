@@ -1,26 +1,18 @@
 import { NextResponse } from 'next/server';
-import { queryAgent } from '../../../lib/knowledge';
+import { queryAgent, SupportedLang } from '../../../lib/knowledge';
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { query } = body;
+    const { query, lang = 'en' } = body;
 
     if (!query) {
-      return NextResponse.json({ text: "Signal lost. Please repeat." }, { status: 400 });
+      return NextResponse.json({ text: "Signal lost." }, { status: 400 });
     }
 
-    // Future-proofing: Check for Real API Key
-    if (process.env.OPENAI_API_KEY) {
-       // TODO: Integrate OpenAI API call here for true unbounded knowledge
-       // const completion = await openai.chat.completions.create({...})
-       // return NextResponse.json({ text: completion.choices[0].message.content });
-    }
-
-    // Simulation Mode logic
-    
-    // 1. Check Local Knowledge Base
-    const agentResult = queryAgent(query);
+    // 1. Check Knowledge Base (Multilingual)
+    // Cast lang to SupportedLang (safe fallback in queryAgent if invalid)
+    const agentResult = queryAgent(query, lang as SupportedLang);
     if (agentResult) {
       return NextResponse.json({ 
         text: agentResult.response, 
@@ -28,33 +20,34 @@ export async function POST(req: Request) {
       });
     }
 
-    // 2. Simulate "Internet Awareness" for common live queries
+    // 2. Simulate "Internet Awareness" (Currently EN only for simulation logic cleanliness)
+    // We could add localization here too
     const lowerQuery = query.toLowerCase();
 
-    if (lowerQuery.includes('time') || lowerQuery.includes('date') || lowerQuery.includes('clock')) {
-        const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-        return NextResponse.json({ text: `Current system time is ${now}. Global synchronization active.` });
+    if (lowerQuery.includes('time') || lowerQuery.includes('zeit') || lowerQuery.includes('tijd') || lowerQuery.includes('hora')) {
+        const now = new Date().toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+        return NextResponse.json({ text: `System time: ${now}` });
     }
+    
+    // ... (Keep other simulations simple for now)
 
-    if (lowerQuery.includes('weather') || lowerQuery.includes('temperature')) {
-        return NextResponse.json({ text: "Simulating meteorological connection... Local atmosphere is stable. Temperature nominal." });
-    }
+    // 3. Fallback
+    const fallbacks: Record<string, string> = {
+        en: "I do not recognize that command.",
+        de: "Ich erkenne diesen Befehl nicht.",
+        nl: "Ik herken dat commando niet.",
+        es: "No reconozco ese comando.",
+        pt: "Não reconheço esse comando.",
+        zh: "我不认识那个命令。",
+        ar: "لا أتعرف على هذا الأمر."
+    };
 
-    if (lowerQuery.includes('stock') || lowerQuery.includes('marked') || lowerQuery.includes('price')) {
-        return NextResponse.json({ text: "Connecting to financial nodes... Tech sector showing increased volatility. Nvidia and robotics stocks are trending upwards." });
-    }
-
-    if (lowerQuery.includes('news') || lowerQuery.includes('headline')) {
-        return NextResponse.json({ text: "Fetching global feeds... Top stories involve new regulations on autonomous agents and breakthroughs in humanoid robotics." });
-    }
-
-    // 3. Fallback for unknown queries
     return NextResponse.json({ 
-        text: "My local database does not contain that information, and VLA Safety Protocols restrict open internet access at this time." 
+        text: fallbacks[lang] || fallbacks['en']
     });
 
   } catch (error) {
     console.error("Agent Error:", error);
-    return NextResponse.json({ text: "System error. Neural pathway interrupted." }, { status: 500 });
+    return NextResponse.json({ text: "System error." }, { status: 500 });
   }
 }

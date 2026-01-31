@@ -19,65 +19,54 @@ export default function HolographicOS() {
   const handleVoiceCommand = useCallback(async (cmd: string) => {
     const lowerCmd = cmd.toLowerCase();
 
-    // 1. Fast Local Logic (Instant)
-    if (lowerCmd.includes("open books") || lowerCmd.includes("nexus books")) {
-        speak("Accessing Neural Archives.");
-        setActiveWindow("books");
-        return;
-    }
-    if (lowerCmd.includes("open services") || lowerCmd.includes("vla services")) {
-        speak("Connecting to VLA Robotics Services.");
-        setActiveWindow("services");
-        return;
-    }
-    if (lowerCmd.includes("open research") || lowerCmd.includes("research lab")) {
-        speak("Decrypting Research Laboratory Data.");
-        setActiveWindow("research");
-        return;
-    }
-    if (lowerCmd.includes("open terminal") || lowerCmd.includes("command line")) {
-        speak("Initializing Command Line Interface.");
-        setActiveWindow("terminal");
-        return;
-    }
-    if (lowerCmd.includes("close") || lowerCmd.includes("close all")) {
-        speak("Terminating active sessions.");
-        setActiveWindow(null);
-        return;
+    // Language Switching
+    if (lowerCmd.includes("english") || lowerCmd.includes("englisch")) { setLanguage('en-US'); speak("English selected."); return; }
+    if (lowerCmd.includes("german") || lowerCmd.includes("deutsch")) { setLanguage('de-DE'); speak("Deutsch ausgewählt."); return; }
+    if (lowerCmd.includes("dutch") || lowerCmd.includes("nederlands")) { setLanguage('nl-NL'); speak("Nederlands geselecteerd."); return; }
+    if (lowerCmd.includes("spanish") || lowerCmd.includes("español")) { setLanguage('es-ES'); speak("Español seleccionado."); return; }
+    if (lowerCmd.includes("portuguese") || lowerCmd.includes("português")) { setLanguage('pt-BR'); speak("Português selecionado."); return; }
+    if (lowerCmd.includes("chinese") || lowerCmd.includes("zhongwen")) { setLanguage('zh-CN'); speak("中文已选择。"); return; }
+    if (lowerCmd.includes("arabic") || lowerCmd.includes("arabiyya")) { setLanguage('ar-SA'); speak("تم اختيار العربية."); return; }
+
+    // 1. Fast Local Logic (Instant) - Check local knowledge for commands first? 
+    // Actually, local logic "open books" only works for English now unless I update this map.
+    // Better to delegate all non-switching commands to the Intelligent Agent if we are not in English?
+    // Or just use the API for everything multilingual to keep this file clean.
+    // Let's use the API for everything except maybe "open books" in English for legacy speed.
+    
+    if (language === 'en-US') {
+        if (lowerCmd.includes("open books") || lowerCmd.includes("nexus books")) { speak("Accessing Neural Archives."); setActiveWindow("books"); return; }
+        if (lowerCmd.includes("open services") || lowerCmd.includes("vla services")) { speak("Connecting to Services."); setActiveWindow("services"); return; }
+        if (lowerCmd.includes("open research") || lowerCmd.includes("research lab")) { speak("Decrypting Data."); setActiveWindow("research"); return; }
+        if (lowerCmd.includes("open terminal")) { speak("Initializing CLI."); setActiveWindow("terminal"); return; }
+        if (lowerCmd.includes("close") || lowerCmd.includes("close all")) { speak("Terminating sessions."); setActiveWindow(null); return; }
     }
 
-    // 2. Intelligent Agent Fallback (Simulated Internet/Portfolio Awareness)
-    // If no direct command matched, query the agent
+    // 2. Intelligent Agent (Multilingual)
     try {
-        // Visual/Audio Feedback that we are processing logic
-        // We could add a visual "Thinking" state here
-        
+        const langCode = language.split('-')[0] as any;
         const response = await fetch('/api/agent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query: lowerCmd })
+            body: JSON.stringify({ query: lowerCmd, lang: langCode })
         });
         
         const data = await response.json();
         
-        if (data.text) {
-            speak(data.text);
-        }
+        if (data.text) speak(data.text);
         
         if (data.action) {
-            // Slight delay for cinematic effect so speech finishes first? 
-            // Or just execute simultaneously.
             if (data.action === 'close') setActiveWindow(null);
             else setActiveWindow(data.action);
         }
     } catch (e) {
         console.error("Agent Error:", e);
-        speak("Connection interrupted. Unable to process query.");
+        speak("Error.");
     }
-  }, []);
+  }, [language]);
   /* eslint-enable react-hooks/exhaustive-deps */
 
-  const { isListening, isSupported, toggleListening, speak, interimTranscript } = useVoiceCommands({ onCommand: handleVoiceCommand });
+  const { isListening, isSupported, toggleListening, speak, interimTranscript, language, setLanguage } = useVoiceCommands({ onCommand: handleVoiceCommand });
   const { playHover, playClick } = useSoundEffects();
 
   return (
@@ -97,11 +86,11 @@ export default function HolographicOS() {
                 onClick={() => { playClick(); toggleListening(); }} 
                 onMouseEnter={playHover}
                 className={`${styles.toolButton} ${isListening ? styles.listening : ''}`} 
-                aria-label={isListening ? "Stop Voice Control" : "Start Voice Control"}
                 style={isListening ? { color: '#ff5f5f', textShadow: '0 0 10px #ff5f5f' } : {}}
             >
                 <span className={styles.icon}>{isListening ? '🎙️' : '🎤'}</span>
-                <span className={styles.label}>{isListening ? 'LISTENING...' : 'VOICE_CMD'}</span>
+                {/* Show Language Code */}
+                <span className={styles.label}>{isListening ? 'ON' : 'VOICE'} [{language.split('-')[0].toUpperCase()}]</span>
             </button>
         )}
         <button 
