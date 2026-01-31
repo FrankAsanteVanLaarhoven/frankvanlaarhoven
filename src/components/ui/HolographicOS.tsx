@@ -5,6 +5,7 @@ import { useState, useCallback } from "react";
 import styles from "./HolographicOS.module.scss";
 import { useVoiceCommands, LanguageCode } from "../../hooks/useVoiceCommands";
 import { useSoundEffects } from "../../hooks/useSoundEffects";
+import FrankyAvatar from "../3d/FrankyAvatar";
 
 type WindowId = "books" | "services" | "terminal" | "research" | null;
 
@@ -77,7 +78,7 @@ export default function HolographicOS() {
   }, [language, speak]);
   /* eslint-enable react-hooks/exhaustive-deps */
 
-  const { isListening, isSupported, startTheSystem, stopTheSystem, interimTranscript, voiceMode } = useVoiceCommands({ onCommand: handleVoiceCommand, language });
+  const { isListening, isSupported, startTheSystem, stopTheSystem, interimTranscript, voiceMode, isSpeaking } = useVoiceCommands({ onCommand: handleVoiceCommand, language });
   const { playHover, playClick } = useSoundEffects();
 
   return (
@@ -154,6 +155,18 @@ export default function HolographicOS() {
 
       {/* Constraints for drag */}
       <div className={styles.desktopArea}>
+        {/* FRANKY 3D AVATAR (Bottom Right Companion) */}
+        <div style={{ 
+            position: 'absolute', 
+            bottom: '20px', 
+            right: '20px', 
+            width: '150px', 
+            height: '150px', 
+            pointerEvents: 'none',
+            zIndex: 100 
+        }}>
+            <FrankyAvatar voiceMode={voiceMode} isSpeaking={isSpeaking} />
+        </div>
         
         {/* Books Module */}
         {activeWindow === "books" && (
