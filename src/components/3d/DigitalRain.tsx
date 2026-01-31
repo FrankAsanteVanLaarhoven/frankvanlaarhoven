@@ -72,24 +72,30 @@ const DigitalRainMaterial = shaderMaterial(
       
       vec3 pos = position;
       // Fall down based on time + speed + offset
-      float y = pos.y - mod(uTime * aSpeed * 5.0 + aOffset, 80.0); // Changed 40.0 to 80.0
+      float y = pos.y - mod(uTime * aSpeed * 5.0 + aOffset, 80.0);
       
       // Reset Y if too low (wrap around) 
-      // Original      // Range Y was [-10, 10], wrap is 20 units. 
-      // Let's make it taller.
-      if (y < -80.0) y += 160.0; // 2. Increase Y loop range in shader (changed -20.0 to -80.0 and 40.0 to 160.0)
+      // Range is roughly 80 to -80
+      if (y < -80.0) y += 160.0;
       
       pos.y = y;
       
-      // Wiggle X slightly
-      // pos.x += sin(uTime + pos.y) * 0.1;
+      // MAGNIFICATION EFFECT:
+      // As particles fall (y goes from 80 down to -80), they get larger.
+      // Top (80) -> scale 1.0
+      // Bottom (-80) -> scale 4.0
+      float dropProgress = (80.0 - y) / 160.0; // 0.0 to 1.0
+      float sizeScale = 1.0 + dropProgress * 3.0; 
 
       vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-      gl_PointSize = 400.0 / -mvPosition.z; // Scale by distance
+      
+      // Apply scale
+      gl_PointSize = (400.0 * sizeScale) / -mvPosition.z; 
+      
       gl_Position = projectionMatrix * mvPosition;
 
-      // Fade out at bottom
-      vOpacity = 1.0 - smoothstep(-15.0, -20.0, pos.y);
+      // Fade out at bottom (start fading at -50, fully gone at -75)
+      vOpacity = 1.0 - smoothstep(-50.0, -75.0, pos.y);
       vPos = pos;
     }
   `,
