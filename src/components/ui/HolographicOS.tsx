@@ -3,17 +3,34 @@
 import { motion } from "framer-motion";
 import { useState, useCallback } from "react";
 import styles from "./HolographicOS.module.scss";
-import { useVoiceCommands } from "../../hooks/useVoiceCommands";
+import { useVoiceCommands, LanguageCode } from "../../hooks/useVoiceCommands";
 import { useSoundEffects } from "../../hooks/useSoundEffects";
 
 type WindowId = "books" | "services" | "terminal" | "research" | null;
 
 export default function HolographicOS() {
   const [activeWindow, setActiveWindow] = useState<WindowId>(null);
+  const [language, setLanguage] = useState<LanguageCode>('en-US');
+
+  const { playHover, playClick } = useSoundEffects();
 
   const toggleWindow = (id: WindowId) => {
     setActiveWindow(activeWindow === id ? null : id);
   };
+
+  const speak = useCallback((text: string) => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        const voices = window.speechSynthesis.getVoices();
+        const langCode = language.split('-')[0];
+        const preferredVoice = voices.find(v => v.lang.startsWith(langCode) && v.name.includes("Google")) 
+                            || voices.find(v => v.lang.startsWith(langCode)) 
+                            || voices[0];
+        if (preferredVoice) utterance.voice = preferredVoice;
+        window.speechSynthesis.speak(utterance);
+    }
+  }, [language]);
 
   /* eslint-disable react-hooks/exhaustive-deps */
   const handleVoiceCommand = useCallback(async (cmd: string) => {
@@ -28,12 +45,7 @@ export default function HolographicOS() {
     if (lowerCmd.includes("chinese") || lowerCmd.includes("zhongwen")) { setLanguage('zh-CN'); speak("中文已选择。"); return; }
     if (lowerCmd.includes("arabic") || lowerCmd.includes("arabiyya")) { setLanguage('ar-SA'); speak("تم اختيار العربية."); return; }
 
-    // 1. Fast Local Logic (Instant) - Check local knowledge for commands first? 
-    // Actually, local logic "open books" only works for English now unless I update this map.
-    // Better to delegate all non-switching commands to the Intelligent Agent if we are not in English?
-    // Or just use the API for everything multilingual to keep this file clean.
-    // Let's use the API for everything except maybe "open books" in English for legacy speed.
-    
+    // 1. Fast Local Logic
     if (language === 'en-US') {
         if (lowerCmd.includes("open books") || lowerCmd.includes("nexus books")) { speak("Accessing Neural Archives."); setActiveWindow("books"); return; }
         if (lowerCmd.includes("open services") || lowerCmd.includes("vla services")) { speak("Connecting to Services."); setActiveWindow("services"); return; }
@@ -63,12 +75,11 @@ export default function HolographicOS() {
         console.error("Agent Error:", e);
         speak("Error.");
     }
-  }, [language]);
+  }, [language, speak]);
   /* eslint-enable react-hooks/exhaustive-deps */
 
-  const { isListening, isSupported, toggleListening, speak, interimTranscript, language, setLanguage } = useVoiceCommands({ onCommand: handleVoiceCommand });
-  const { playHover, playClick } = useSoundEffects();
-
+  const { isListening, isSupported, toggleListening, interimTranscript } = useVoiceCommands({ onCommand: handleVoiceCommand, language });
+  
   return (
     <div className={styles.osLayer}>
       {/* Dynamic "Ephemeral" Toolbar */}
