@@ -195,14 +195,16 @@ export default function HolographicOS() {
         {activeWindow === "terminal" && (
             <motion.div
                 className={`${styles.window} ${styles.terminalPanel}`}
-                initial={{ y: 50, opacity: 0 }}
+                initial={{ y: -50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 drag
+                dragMomentum={false}
             >
                 <div className={styles.windowHeader}>
                     <h3>COMMAND_INTERFACE_V1</h3>
+                    {/* Move Close button to ensure it's clickable and visible */}
                     <div className={styles.windowControls}>
-                        <span className={styles.close} onClick={() => setActiveWindow(null)}>×</span>
+                        <span className={styles.close} onClick={() => setActiveWindow(null)}>× CLOSE</span>
                     </div>
                 </div>
                 <div className={styles.terminalContent}>
