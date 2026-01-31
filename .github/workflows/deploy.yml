@@ -46,3 +46,12 @@ jobs:
 
           # Install Deps & Restart PM2
           ssh $USER@$HOST "cd $TARGET && npm ci --production && pm2 reload ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production"
+
+      - name: Notify Notification Service
+        if: success()
+        run: |
+          echo "🚀 Deployment Successful! Notification sent to info@frankvanlaarhoven.co.uk"
+          # To actually send email, you would use a tool like 'sendmail' or an API like SendGrid/AWS SES here.
+          # Example:
+          # curl -X POST https://api.notification.service/send \
+          #      -d '{"to": "info@frankvanlaarhoven.co.uk", "subject": "Deployment Success", "body": "New version deployed."}'
