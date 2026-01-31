@@ -1,0 +1,55 @@
+@use "sass:math";
+
+:root {
+  --color-bg: #030303;
+  --color-text: #e0e0e0;
+  --color-accent: #7d5fff;
+  --color-accent-glow: rgba(125, 95, 255, 0.4);
+  --font-primary: var(--font-inter);
+  --font-display: var(--font-syncopate);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-primary), sans-serif;
+  overflow: hidden; /* Lenis usually handles scroll, but we might want native scroll hidden if using smooth wrapper */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Lenis recommended styles
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+canvas {
+  touch-action: none;
+  outline: none;
+}
