@@ -16,33 +16,63 @@ export default function HolographicOS() {
   };
 
   /* eslint-disable react-hooks/exhaustive-deps */
-  const handleVoiceCommand = useCallback((cmd: string) => {
-    // Conversational Responses
-    if (cmd.includes("open books") || cmd.includes("nexus books")) {
+  const handleVoiceCommand = useCallback(async (cmd: string) => {
+    const lowerCmd = cmd.toLowerCase();
+
+    // 1. Fast Local Logic (Instant)
+    if (lowerCmd.includes("open books") || lowerCmd.includes("nexus books")) {
         speak("Accessing Neural Archives.");
         setActiveWindow("books");
+        return;
     }
-    if (cmd.includes("open services") || cmd.includes("vla services")) {
+    if (lowerCmd.includes("open services") || lowerCmd.includes("vla services")) {
         speak("Connecting to VLA Robotics Services.");
         setActiveWindow("services");
+        return;
     }
-    if (cmd.includes("open research") || cmd.includes("research lab")) {
+    if (lowerCmd.includes("open research") || lowerCmd.includes("research lab")) {
         speak("Decrypting Research Laboratory Data.");
         setActiveWindow("research");
+        return;
     }
-    if (cmd.includes("open terminal") || cmd.includes("command line")) {
+    if (lowerCmd.includes("open terminal") || lowerCmd.includes("command line")) {
         speak("Initializing Command Line Interface.");
         setActiveWindow("terminal");
+        return;
     }
-    if (cmd.includes("close") || cmd.includes("close all")) {
+    if (lowerCmd.includes("close") || lowerCmd.includes("close all")) {
         speak("Terminating active sessions.");
         setActiveWindow(null);
+        return;
     }
-    if (cmd.includes("hello") || cmd.includes("hi")) {
-        speak("Greetings. I am ready for your command.");
-    }
-    if (cmd.includes("status")) {
-        speak("All systems nominal. VLA Guard is active.");
+
+    // 2. Intelligent Agent Fallback (Simulated Internet/Portfolio Awareness)
+    // If no direct command matched, query the agent
+    try {
+        // Visual/Audio Feedback that we are processing logic
+        // We could add a visual "Thinking" state here
+        
+        const response = await fetch('/api/agent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: lowerCmd })
+        });
+        
+        const data = await response.json();
+        
+        if (data.text) {
+            speak(data.text);
+        }
+        
+        if (data.action) {
+            // Slight delay for cinematic effect so speech finishes first? 
+            // Or just execute simultaneously.
+            if (data.action === 'close') setActiveWindow(null);
+            else setActiveWindow(data.action);
+        }
+    } catch (e) {
+        console.error("Agent Error:", e);
+        speak("Connection interrupted. Unable to process query.");
     }
   }, []);
   /* eslint-enable react-hooks/exhaustive-deps */
