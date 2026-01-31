@@ -92,7 +92,6 @@ export default function HolographicOS() {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             drag
-            dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
             dragElastic={0.2}
           >
             <div className={styles.windowHeader}>

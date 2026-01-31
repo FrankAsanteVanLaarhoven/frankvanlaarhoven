@@ -16,7 +16,7 @@ function createMatrixTexture() {
   context.fillStyle = "black";
   context.fillRect(0, 0, 512, 512);
 
-  context.fillStyle = "#0f0";
+  context.fillStyle = "white";
   context.font = "bold 32px monospace";
   context.textAlign = "center";
   context.textBaseline = "middle";
@@ -72,12 +72,12 @@ const DigitalRainMaterial = shaderMaterial(
       
       vec3 pos = position;
       // Fall down based on time + speed + offset
-      float y = pos.y - mod(uTime * aSpeed * 5.0 + aOffset, 40.0);
+      float y = pos.y - mod(uTime * aSpeed * 5.0 + aOffset, 80.0); // Changed 40.0 to 80.0
       
       // Reset Y if too low (wrap around) 
-      // Original range Y was [-10, 10], wrap is 20 units. 
+      // Original      // Range Y was [-10, 10], wrap is 20 units. 
       // Let's make it taller.
-      if (y < -20.0) y += 40.0;
+      if (y < -80.0) y += 160.0; // 2. Increase Y loop range in shader (changed -20.0 to -80.0 and 40.0 to 160.0)
       
       pos.y = y;
       
@@ -85,7 +85,7 @@ const DigitalRainMaterial = shaderMaterial(
       // pos.x += sin(uTime + pos.y) * 0.1;
 
       vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-      gl_PointSize = 300.0 / -mvPosition.z; // Scale by distance
+      gl_PointSize = 400.0 / -mvPosition.z; // Scale by distance
       gl_Position = projectionMatrix * mvPosition;
 
       // Fade out at bottom
@@ -169,7 +169,7 @@ export default function DigitalRain({ count = 2000 }) {
 
     for (let i = 0; i < count; i++) {
         pos[i * 3] = (Math.random() - 0.5) * 30; // X
-        pos[i * 3 + 1] = (Math.random() - 0.5) * 20; // Y
+        pos[i * 3 + 1] = (Math.random() - 0.5) * 80; // Y
         pos[i * 3 + 2] = (Math.random() - 0.5) * 10; // Z depth
 
         off[i] = Math.random() * 20;

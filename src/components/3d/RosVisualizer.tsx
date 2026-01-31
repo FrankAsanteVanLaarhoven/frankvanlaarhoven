@@ -58,7 +58,7 @@ export default function RosVisualizer() {
       </points>
       
       {/* Floating Diagnostics Text */}
-      <group position={[3, 2, 0]} rotation={[0, -Math.PI / 2, 0]}>
+      <group position={[4, 1, 0]} rotation={[0, -Math.PI / 2, 0]}>
          <Html
             transform
             distanceFactor={10}
@@ -67,9 +67,9 @@ export default function RosVisualizer() {
             style={{
                 fontFamily: 'monospace',
                 color: '#00ff88',
-                fontSize: '12px',
-                background: 'rgba(0,0,0,0.8)',
-                padding: '5px',
+                fontSize: '10px',
+                background: 'rgba(0,0,0,0.6)',
+                padding: '4px',
                 border: '1px solid #00ff88',
                 userSelect: 'none',
                 pointerEvents: 'none',
