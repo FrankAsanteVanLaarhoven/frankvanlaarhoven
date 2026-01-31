@@ -231,7 +231,6 @@ export default function DigitalRain({ count = 2000 }) {
         
         {/* Interaction Plane: A hidden plane that captures clicks in 3D space */}
         <mesh 
-            visible={false} 
             position={[0, 0, 0]} 
             onClick={(e) => {
                 e.stopPropagation();

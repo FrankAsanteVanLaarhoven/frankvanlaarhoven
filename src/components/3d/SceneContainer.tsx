@@ -14,7 +14,7 @@ export default function SceneContainer() {
           <Canvas
             shadows
             dpr={[1, 2]}
-            camera={{ position: [0, 0, 5], fov: 45 }}
+            camera={{ position: [0, 0, 25], fov: 45 }}
             gl={{ antialias: true, alpha: true }}
           >
             <Suspense fallback={null}>
