@@ -1,0 +1,48 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Application
+        run: npm run build
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh/
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to Server
+        env:
+          HOST: ${{ secrets.HOST }}
+          USER: ${{ secrets.USERNAME }}
+          TARGET: /var/www/obsidian-plasma
+        run: |
+          # Create directory if not exists
+          ssh $USER@$HOST "mkdir -p $TARGET"
+
+          # Sync files (excluding node_modules to save bandwidth, we install on server)
+          rsync -avz --exclude 'node_modules' --exclude '.git' ./ $USER@$HOST:$TARGET
+
+          # Install Deps & Restart PM2
+          ssh $USER@$HOST "cd $TARGET && npm ci --production && pm2 reload ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production"
