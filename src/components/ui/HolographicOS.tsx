@@ -7,7 +7,7 @@ import { useVoiceCommands, LanguageCode } from "../../hooks/useVoiceCommands";
 import { useSoundEffects } from "../../hooks/useSoundEffects";
 import FrankyAvatar from "../3d/FrankyAvatar";
 
-type WindowId = "books" | "services" | "terminal" | "research" | null;
+type WindowId = "books" | "services" | "terminal" | "research" | "comms" | null;
 
 export default function HolographicOS() {
   const [activeWindow, setActiveWindow] = useState<WindowId>(null);
@@ -50,6 +50,7 @@ export default function HolographicOS() {
         if (lowerCmd.includes("open books") || lowerCmd.includes("nexus books")) { speak("Accessing Neural Archives."); setActiveWindow("books"); return; }
         if (lowerCmd.includes("open services") || lowerCmd.includes("vla services")) { speak("Connecting to Services."); setActiveWindow("services"); return; }
         if (lowerCmd.includes("open research") || lowerCmd.includes("research lab")) { speak("Decrypting Data."); setActiveWindow("research"); return; }
+        if (lowerCmd.includes("open communications") || lowerCmd.includes("open contact")) { speak("Opening Secure Channel."); setActiveWindow("comms"); return; }
         if (lowerCmd.includes("open terminal")) { speak("Initializing CLI."); setActiveWindow("terminal"); return; }
         if (lowerCmd.includes("close") || lowerCmd.includes("close all")) { speak("Terminating sessions."); setActiveWindow(null); return; }
     }
@@ -143,6 +144,15 @@ export default function HolographicOS() {
           <span className={styles.label}>VLA_SERVICES</span>
         </button>
         <button 
+            onClick={() => { playClick(); toggleWindow("comms"); }} 
+            onMouseEnter={playHover}
+            className={styles.toolButton} 
+            aria-label="Open Communications"
+        >
+          <span className={styles.icon}>📡</span>
+          <span className={styles.label}>COMM_LINK</span>
+        </button>
+        <button 
             onClick={() => { playClick(); toggleWindow("terminal"); }} 
             onMouseEnter={playHover}
             className={styles.toolButton} 
@@ -230,7 +240,10 @@ export default function HolographicOS() {
                     <br/><span style={{opacity:0.7, fontSize:'0.8em'}}>Scalable ROS 2 Swarm Infrastructure.</span>
                  </li>
                </ul>
-               <button className={styles.actionLink} onClick={() => alert('INITIATING_SECURE_Handshake...')}>INITIATE_CONTACT_PROTOCOL</button>
+               <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                  <button className={styles.actionLink} onClick={() => window.location.href = 'mailto:safevla-robots@frankvanlaarhoven.com'}>REQUEST_SAFETY_AUDIT</button>
+                  <button className={styles.actionLink} onClick={() => window.location.href = 'mailto:consultancy@frankvanlaarhoven.com'}>CONSULTING_INQUIRY</button>
+               </div>
                <div className={styles.statusBox}>
                  &quot;Can your robot check safety before it moves?&quot;
                  <br/>&gt; VLA_GUARD_ACTIVE...
@@ -266,12 +279,53 @@ export default function HolographicOS() {
                  <p>&quot;Latency-free force feedback for teleoperation safety.&quot;</p>
                  <button className={styles.actionLink} onClick={() => alert('OPENING_SIMULATION_STREAM...')}>VIEW_SIMULATION</button>
                </div>
+               <button className={styles.actionLink} style={{width: '100%', marginTop: '10px'}} onClick={() => window.location.href = 'mailto:research@frankvanlaarhoven.com'}>
+                  COLLABORATE_ON_RESEARCH
+               </button>
                <div className={styles.statusBox} style={{ borderColor: '#7d5fff', color: '#7d5fff', background: 'rgba(125, 95, 255, 0.05)' }}>
                  SECURITY_LEVEL: OMEGA
                  <br/>&gt; DECRYPTING_VLA_ARCHIVES...
                </div>
             </div>
           </motion.div>
+        )}
+
+        {/* Communications Module */}
+        {activeWindow === "comms" && (
+            <motion.div
+                className={`${styles.window} ${styles.glassPanel}`}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                drag
+            >
+                <div className={styles.windowHeader}>
+                    <h3>SECURE_COMM_LINK</h3>
+                    <div className={styles.windowControls}>
+                        <span className={styles.close} onClick={() => setActiveWindow(null)}>×</span>
+                    </div>
+                </div>
+                <div className={styles.windowContent}>
+                    <div className={styles.bookItem}>
+                        <h4>General Inquiries</h4>
+                        <p style={{marginBottom: '5px'}}>System Access & General Information.</p>
+                        <button className={styles.actionLink} onClick={() => window.location.href = 'mailto:contact@frankvanlaarhoven.com'}>CONTACT_SYSTEM</button>
+                    </div>
+                    <div className={styles.bookItem}>
+                        <h4>Direct Uplink</h4>
+                        <p style={{marginBottom: '5px'}}>Priority Channel for Urgent Matters.</p>
+                        <button className={styles.actionLink} onClick={() => window.location.href = 'mailto:frank@frankvanlaarhoven.com'}>CONTACT_FRANK</button>
+                    </div>
+                    <div className={styles.bookItem}>
+                        <h4>Technical Support</h4>
+                        <p style={{marginBottom: '5px'}}>Report bugs or system anomalies.</p>
+                        <button className={styles.actionLink} onClick={() => window.location.href = 'mailto:support@frankvanlaarhoven.com'}>CONTACT_SUPPORT</button>
+                    </div>
+                     <div className={styles.statusBox} style={{ borderColor: '#00ccff', color: '#00ccff', background: 'rgba(0, 204, 255, 0.05)' }}>
+                        ENCRYPTION: AES-256
+                        <br/>&gt; CHANNEL_OPEN...
+                    </div>
+                </div>
+            </motion.div>
         )}
 
         {/* Terminal / Command Line Interface */}
