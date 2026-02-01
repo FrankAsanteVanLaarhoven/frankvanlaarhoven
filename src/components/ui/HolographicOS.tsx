@@ -6,8 +6,9 @@ import styles from "./HolographicOS.module.scss";
 import { useVoiceCommands, LanguageCode } from "../../hooks/useVoiceCommands";
 import { useSoundEffects } from "../../hooks/useSoundEffects";
 import FrankyAvatar from "../3d/FrankyAvatar";
+import DidAvatar from "../3d/DidAvatar";
 
-type WindowId = "books" | "services" | "terminal" | "research" | "comms" | "projects" | null;
+type WindowId = "books" | "services" | "terminal" | "research" | "comms" | "projects" | "presence" | null;
 
 export default function HolographicOS() {
   const [activeWindow, setActiveWindow] = useState<WindowId>(null);
@@ -52,6 +53,7 @@ export default function HolographicOS() {
         if (lowerCmd.includes("open research") || lowerCmd.includes("research lab")) { speak("Decrypting Data."); setActiveWindow("research"); return; }
         if (lowerCmd.includes("open projects") || lowerCmd.includes("show portfolio") || lowerCmd.includes("my startups")) { speak("Accessing Project Archives."); setActiveWindow("projects"); return; }
         if (lowerCmd.includes("open communications") || lowerCmd.includes("open contact")) { speak("Opening Secure Channel."); setActiveWindow("comms"); return; }
+        if (lowerCmd.includes("activate presence") || lowerCmd.includes("video link")) { speak("Establishing Video Uplink."); setActiveWindow("presence"); return; }
         if (lowerCmd.includes("open terminal")) { speak("Initializing CLI."); setActiveWindow("terminal"); return; }
         if (lowerCmd.includes("close") || lowerCmd.includes("close all")) { speak("Terminating sessions."); setActiveWindow(null); return; }
     }
@@ -161,6 +163,15 @@ export default function HolographicOS() {
         >
           <span className={styles.icon}>📡</span>
           <span className={styles.label}>COMM_LINK</span>
+        </button>
+        <button 
+            onClick={() => { playClick(); toggleWindow("presence"); }} 
+            onMouseEnter={playHover}
+            className={styles.toolButton} 
+            aria-label="Toggle Presence"
+        >
+          <span className={styles.icon}>🎥</span>
+          <span className={styles.label}>PRESENCE</span>
         </button>
         <button 
             onClick={() => { playClick(); toggleWindow("terminal"); }} 
@@ -399,6 +410,9 @@ export default function HolographicOS() {
                 </div>
             </motion.div>
         )}
+
+        {/* D-ID Presence Interface */}
+        <DidAvatar isActive={activeWindow === "presence"} onClose={() => setActiveWindow(null)} />
 
         {/* Terminal / Command Line Interface */}
         {activeWindow === "terminal" && (
