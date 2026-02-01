@@ -99,123 +99,75 @@ export function useVoiceCommands({ onCommand, language }: VoiceCommandProps) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       const recognition = new SpeechRecognition();
       
-      recognition.continuous = true; // Continuous for wake word
-      recognition.interimResults = true; 
-      recognition.lang = language; 
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = language;
+      
+      // CRITICAL FIX: Assign to ref so startTheSystem can use it
+      recognitionRef.current = recognition;
 
       recognition.onresult = (event: any) => {
-        let interim = '';
-        let final = '';
+          let interim = '';
+          let final = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+              if (event.results[i].isFinal) final += event.results[i][0].transcript;
+              else interim += event.results[i][0].transcript;
+          }
 
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-                final += event.results[i][0].transcript;
-            } else {
-                interim += event.results[i][0].transcript;
-            }
-        }
-        
-        const text = (final || interim).toLowerCase();
-        setInterimTranscript(text);
+          const lowerInterim = interim.toLowerCase();
+          const lowerFinal = final.toLowerCase();
+          const combined = (lowerFinal + " " + lowerInterim).trim();
 
-        // State Machine Logic inside Effect (accessing current state via refs would be better, but we rely on simple closures for now or internal mode check if possible)
-        // Since we can't easily access 'voiceMode' state inside this closure without rebuilding the recognizer constantly, 
-        // we'll rely on the parent component triggering restarts OR we use a ref for voiceMode.
-        // Let's assume 'voiceMode' logic is handled by looking at the text content for now, 
-        // OR we need to refactor to use a ref for mode.
+          // WAKE WORD DETECTION
+          if (voiceModeRef.current === 'STANDBY') {
+              if (combined.includes('franky') || combined.includes('frankie') || combined.includes('system')) {
+                  console.log("Wake Word Detected!");
+                  activateAgent();
+                  setInterimTranscript("I'm listening...");
+                  return;
+              } else {
+                  setInterimTranscript("Waiting for 'Franky'...");
+              }
+          } 
+          
+          // COMMAND PROCESSING
+          if (voiceModeRef.current === 'ACTIVE') {
+              setInterimTranscript(combined);
+              if (final) {
+                   const cleanCommand = final.replace(/franky|frankie|system/gi, '').trim();
+                   if (cleanCommand.length > 2) {
+                       console.log("Command:", cleanCommand);
+                       onCommand(cleanCommand);
+                       resetToStandby();
+                   }
+              }
+              if (activeTimeoutRef.current) {
+                  clearTimeout(activeTimeoutRef.current);
+                  activeTimeoutRef.current = setTimeout(resetToStandby, 5000);
+              }
+          }
+      };
+
+      recognition.onerror = (event: any) => {
+          if (event.error !== 'no-speech') console.error('Voice Error:', event.error);
+      };
+
+      recognition.onend = () => {
+          if (voiceModeRef.current !== 'OFF') {
+              try {
+                  recognition.start();
+              } catch (e) {
+                  // ignore
+              }
+          }
       };
       
-      // We need a ref for voiceMode to use it inside the event listener without recreating it
-      // actually, let's do the logic in a separate effect dependent on transcript?
-      // No, that's laggy.
-      // Let's refactor to use `useRef` for the mode logic inside the callback.
+      // Cleanup
+      return () => {
+          recognition.stop();
+      };
     }
-  }, [language]); 
-  
-  // RE-IMPLEMENTING PROPERLY WITH REFS FOR EVENT HANDLERS
-  const voiceModeRef = (typeof window !== 'undefined') ? 
-     // eslint-disable-next-line react-hooks/rules-of-hooks
-     useState<{ current: VoiceMode }>({ current: 'OFF' })[0] : { current: 'OFF' as VoiceMode };
-
-  useEffect(() => {
-      voiceModeRef.current = voiceMode;
-  }, [voiceMode]);
-
-  useEffect(() => {
-     if (!isSupported || !recognitionRef.current) return;
-     
-     const recognition = recognitionRef.current;
-     recognition.lang = language;
-     
-     recognition.onresult = (event: any) => {
-        let interim = '';
-        let final = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) final += event.results[i][0].transcript;
-            else interim += event.results[i][0].transcript;
-        }
-
-        const lowerInterim = interim.toLowerCase();
-        const lowerFinal = final.toLowerCase();
-        const combined = (lowerFinal + " " + lowerInterim).trim();
-
-        // WAKE WORD DETECTION
-        if (voiceModeRef.current === 'STANDBY') {
-            if (combined.includes('franky') || combined.includes('frankie') || combined.includes('system')) {
-                // Wake detected
-                console.log("Wake Word Detected!");
-                activateAgent();
-                // Clear the buffer visually?
-                setInterimTranscript("I'm listening...");
-                return;
-            } else {
-                setInterimTranscript("Waiting for 'Franky'...");
-            }
-        } 
-        
-        // COMMAND PROCESSING
-        if (voiceModeRef.current === 'ACTIVE') {
-            setInterimTranscript(combined);
-            
-            // If final result, process it
-            if (final) {
-                 // Strip wake word if present to avoid confusion
-                 const cleanCommand = final.replace(/franky|frankie|system/gi, '').trim();
-                 if (cleanCommand.length > 2) {
-                     console.log("Command:", cleanCommand);
-                     onCommand(cleanCommand);
-                     resetToStandby(); // Go back to standby after command
-                 }
-            }
-            
-            // Renew timeout on activity
-            if (activeTimeoutRef.current) {
-                clearTimeout(activeTimeoutRef.current);
-                activeTimeoutRef.current = setTimeout(resetToStandby, 5000);
-            }
-        }
-     };
-
-     recognition.onerror = (event: any) => {
-        if (event.error !== 'no-speech') console.error('Voice Error:', event.error);
-        // Don't stop listening on error, just restart if needed
-        // But the 'onend' handler will restart us.
-     };
-
-     // Auto-restart for continuous listening
-     recognition.onend = () => {
-         if (voiceModeRef.current !== 'OFF') {
-             try {
-                 recognition.start();
-             } catch (e) {
-                 // ignore already started errors
-             }
-         } else {
-             // System is OFF, do nothing.
-         }
-     };
-
-  }, [language, onCommand, activateAgent, resetToStandby]);
+  }, [language, activateAgent, resetToStandby, onCommand]);
 
   const startTheSystem = useCallback(() => {
       if (recognitionRef.current) {
