@@ -207,12 +207,12 @@ export default function HolographicOS() {
                <div className={styles.bookItem}>
                  <h4>The Cognitive Divide</h4>
                  <p>&quot;Re-conceptualising programming in the Era of AI.&quot;</p>
-                 <button className={styles.actionLink} onClick={() => alert('ACCESSING_HOLOGRAM: COGNITIVE_DIVIDE_V1')}>READ_HOLOGRAM</button>
+                 <button className={styles.actionLink} onClick={() => window.open('https://www.amazon.co.uk/s?k=the+cognitive+divide&crid=30GCNNFXOR5FH&sprefix=the+cognitive+divide%2Caps%2C101&ref=nb_sb_noss', '_blank')}>READ_ON_AMAZON</button>
                </div>
                <div className={styles.bookItem}>
                  <h4>Navigation Bible</h4>
                  <p>&quot;Universal Navigation Principle for Autonomous Agents.&quot;</p>
-                 <button className={styles.actionLink} onClick={() => alert('ACCESSING_HOLOGRAM: NAV_BIBLE_ALPHA')}>READ_HOLOGRAM</button>
+                 <button className={styles.actionLink} onClick={() => window.open('https://www.amazon.co.uk/NAVIGATION-BIBLE-UNIVERSAL-PRINCIPLE-Universal-ebook/dp/B0FQRPD1QH?ref_=ast_author_mpb', '_blank')}>READ_ON_AMAZON</button>
                </div>
                <div className={styles.statusBox} style={{ marginTop: 'auto', fontSize: '0.8rem' }}>
                  STATUS: ARCHIVED_IN_Permanent_Storage
@@ -371,11 +371,27 @@ export default function HolographicOS() {
                         <p style={{marginBottom: '5px'}}>Priority Channel for Urgent Matters.</p>
                         <button className={styles.actionLink} onClick={() => window.location.href = 'mailto:frank@frankvanlaarhoven.com'}>CONTACT_FRANK</button>
                     </div>
-                    <div className={styles.bookItem}>
-                        <h4>Technical Support</h4>
-                        <p style={{marginBottom: '5px'}}>Report bugs or system anomalies.</p>
-                        <button className={styles.actionLink} onClick={() => window.location.href = 'mailto:support@frankvanlaarhoven.com'}>CONTACT_SUPPORT</button>
-                    </div>
+                        <div className={styles.bookItem}>
+                            <h4>Technical Support</h4>
+                            <p style={{marginBottom: '5px'}}>Bug Reports & Integration.</p>
+                            <button className={styles.actionLink} onClick={() => window.location.href = 'mailto:support@frankvanlaarhoven.com'}>GET_SUPPORT</button>
+                        </div>
+
+                        <div className={styles.bookItem} style={{marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '10px'}}>
+                            <h4>Secure Uplinks</h4>
+                            <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
+                                <button className={styles.actionLink} onClick={() => window.open('https://www.linkedin.com/in/frank-van-laarhoven-cognitive-divide/', '_blank')}>LINKEDIN_PROFILE</button>
+                                <button className={styles.actionLink} onClick={() => window.location.href = 'tel:+07481872197'}>MOBILE_UPLINK</button>
+                            </div>
+                        </div>
+
+                        <div className={styles.bookItem}>
+                             <h4>Media Feeds</h4>
+                             <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
+                                <button className={styles.actionLink} onClick={() => window.open('https://www.youtube.com/results?search_query=safevla-robots', '_blank')}>YOUTUBE [SAFEVLA]</button>
+                                <button className={styles.actionLink} onClick={() => window.open('https://twitter.com/search?q=Frank%20van%20Laarhoven', '_blank')}>X_FEED [SEARCH]</button>
+                             </div>
+                        </div>
                      <div className={styles.statusBox} style={{ borderColor: '#00ccff', color: '#00ccff', background: 'rgba(0, 204, 255, 0.05)' }}>
                         ENCRYPTION: AES-256
                         <br/>&gt; CHANNEL_OPEN...
