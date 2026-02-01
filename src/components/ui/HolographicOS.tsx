@@ -7,7 +7,7 @@ import { useVoiceCommands, LanguageCode } from "../../hooks/useVoiceCommands";
 import { useSoundEffects } from "../../hooks/useSoundEffects";
 import FrankyAvatar from "../3d/FrankyAvatar";
 
-type WindowId = "books" | "services" | "terminal" | "research" | "comms" | null;
+type WindowId = "books" | "services" | "terminal" | "research" | "comms" | "projects" | null;
 
 export default function HolographicOS() {
   const [activeWindow, setActiveWindow] = useState<WindowId>(null);
@@ -50,6 +50,7 @@ export default function HolographicOS() {
         if (lowerCmd.includes("open books") || lowerCmd.includes("nexus books")) { speak("Accessing Neural Archives."); setActiveWindow("books"); return; }
         if (lowerCmd.includes("open services") || lowerCmd.includes("vla services")) { speak("Connecting to Services."); setActiveWindow("services"); return; }
         if (lowerCmd.includes("open research") || lowerCmd.includes("research lab")) { speak("Decrypting Data."); setActiveWindow("research"); return; }
+        if (lowerCmd.includes("open projects") || lowerCmd.includes("show portfolio") || lowerCmd.includes("my startups")) { speak("Accessing Project Archives."); setActiveWindow("projects"); return; }
         if (lowerCmd.includes("open communications") || lowerCmd.includes("open contact")) { speak("Opening Secure Channel."); setActiveWindow("comms"); return; }
         if (lowerCmd.includes("open terminal")) { speak("Initializing CLI."); setActiveWindow("terminal"); return; }
         if (lowerCmd.includes("close") || lowerCmd.includes("close all")) { speak("Terminating sessions."); setActiveWindow(null); return; }
@@ -133,6 +134,15 @@ export default function HolographicOS() {
         >
           <span className={styles.icon}>🔬</span>
           <span className={styles.label}>RESEARCH_LAB</span>
+        </button>
+        <button 
+            onClick={() => { playClick(); toggleWindow("projects"); }} 
+            onMouseEnter={playHover}
+            className={styles.toolButton} 
+            aria-label="Open Projects"
+        >
+          <span className={styles.icon}>💼</span>
+          <span className={styles.label}>PROJECTS</span>
         </button>
         <button 
             onClick={() => { playClick(); toggleWindow("services"); }} 
@@ -288,6 +298,52 @@ export default function HolographicOS() {
                </div>
             </div>
           </motion.div>
+        )}
+
+        {/* Projects Module */}
+        {activeWindow === "projects" && (
+            <motion.div
+                className={`${styles.window} ${styles.glassPanel}`}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                drag
+                style={{ width: '500px' }} // Wider for portfolio
+            >
+                <div className={styles.windowHeader}>
+                    <h3>PROJECT_ARCHIVES_V1</h3>
+                    <div className={styles.windowControls}>
+                        <span className={styles.close} onClick={() => setActiveWindow(null)}>×</span>
+                    </div>
+                </div>
+                <div className={styles.windowContent} style={{ maxHeight: '600px', overflowY: 'auto' }}>
+                    
+                    {/* Startups Section */}
+                    <h4 style={{ borderBottom: '1px solid rgba(0, 255, 157, 0.3)', paddingBottom: '5px', marginBottom: '10px', color: '#00ff9d' }}>STARTUP_VENTURES</h4>
+                    <ul className={styles.serviceList}>
+                        <li><a href="https://oracleiqtrader.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🔮 OracleIQ Trader</a></li>
+                        <li><a href="https://atlassupplychainos.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🌍 Atlas Supply Chain OS</a></li>
+                        <li><a href="https://nava-ai.cloud" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🧠 NAVA AI Cloud</a></li>
+                        <li><a href="https://aethonai.io" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🦅 Aethon AI</a></li>
+                        <li><a href="https://retrofitforge.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>⚙️ Retrofit Forge</a></li>
+                    </ul>
+
+                    {/* SaaS Section */}
+                    <h4 style={{ borderBottom: '1px solid rgba(0, 204, 255, 0.3)', paddingBottom: '5px', marginTop: '20px', marginBottom: '10px', color: '#00ccff' }}>SaaS_PLATFORMS</h4>
+                    <ul className={styles.serviceList}>
+                        <li><a href="https://rovyn.io" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>☁️ Rovyn.io</a></li>
+                        <li><a href="https://telixar.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>📡 Telixar</a></li>
+                    </ul>
+
+                    {/* Personal Section */}
+                    <h4 style={{ borderBottom: '1px solid rgba(255, 0, 255, 0.3)', paddingBottom: '5px', marginTop: '20px', marginBottom: '10px', color: '#ff00ff' }}>PERSONAL_INITIATIVES</h4>
+                    <ul className={styles.serviceList}>
+                        <li><a href="https://frankvanlaarhoven.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>👨‍💻 Frank van Laarhoven</a></li>
+                        <li><a href="https://cognitivedivideai.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🧩 Cognitive Divide AI</a></li>
+                        <li><a href="https://programmingintelligence.org" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🎓 Programming Intelligence</a></li>
+                    </ul>
+
+                </div>
+            </motion.div>
         )}
 
         {/* Communications Module */}

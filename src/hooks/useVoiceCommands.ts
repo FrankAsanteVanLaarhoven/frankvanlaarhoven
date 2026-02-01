@@ -93,6 +93,15 @@ export function useVoiceCommands({ onCommand, language }: VoiceCommandProps) {
      }, 8000); 
   }, [resetToStandby]);
 
+  // RE-IMPLEMENTING PROPERLY WITH REFS FOR EVENT HANDLERS
+  const voiceModeRef = (typeof window !== 'undefined') ? 
+     // eslint-disable-next-line react-hooks/rules-of-hooks
+     useState<{ current: VoiceMode }>({ current: 'OFF' })[0] : { current: 'OFF' as VoiceMode };
+
+  useEffect(() => {
+      voiceModeRef.current = voiceMode;
+  }, [voiceMode]);
+
   useEffect(() => {
     if (typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition)) {
       setIsSupported(true);
