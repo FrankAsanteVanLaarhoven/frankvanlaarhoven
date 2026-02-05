@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: frank-portfolio
+    restart: always
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - public-proxy
+
+networks:
+  public-proxy:
+    external: true
