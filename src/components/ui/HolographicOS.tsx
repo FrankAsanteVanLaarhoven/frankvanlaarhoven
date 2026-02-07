@@ -345,6 +345,7 @@ export default function HolographicOS() {
                         <li><a href="https://oracleiqtrader.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🔮 OracleIQ Trader</a></li>
                         <li><a href="https://atlassupplychainos.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🌍 Atlas Supply Chain OS</a></li>
                         <li><a href="https://nava-ai.cloud" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🧠 NAVA AI Cloud</a></li>
+                        <li><a href="https://telixar.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>📡 Telixar</a></li>
                         <li><a href="https://aethonai.io" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🦅 Aethon AI</a></li>
                         <li><a href="https://retrofitforge.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>⚙️ Retrofit Forge</a></li>
                     </ul>
@@ -353,7 +354,6 @@ export default function HolographicOS() {
                     <h4 style={{ borderBottom: '1px solid rgba(0, 204, 255, 0.3)', paddingBottom: '5px', marginTop: '20px', marginBottom: '10px', color: '#00ccff' }}>SaaS_PLATFORMS</h4>
                     <ul className={styles.serviceList}>
                         <li><a href="https://rovyn.io" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>☁️ Rovyn.io</a></li>
-                        <li><a href="https://telixar.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>📡 Telixar</a></li>
                     </ul>
 
                     {/* Personal Section */}

@@ -46,26 +46,26 @@ export default function DidAvatar({ isActive, onClose }: DidAvatarProps) {
     setConnectionStatus('SECURING_UPLINK...');
 
     try {
-        // 1. Get Client Key (Secure Proxy pattern recommended for production, but using direct Basic Auth for demo)
-        const response = await fetch("https://api.d-id.com/agents/client-key", {
-            method: "POST",
-            headers: {
-                "Authorization": `Basic ${apiKey}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                 // In production, this should be strict
-                allowed_domains: [window.location.origin] 
-            })
-        });
-
-        if (!response.ok) {
-             if (response.status === 401) throw new Error("Invalid API Key");
-             throw new Error(`Auth failed: ${response.statusText}`);
-        }
+        // 1. Get Client Key
+        // Check local storage first
+        let clientKey = localStorage.getItem('did_client_key');
         
-        const data = await response.json();
-        const clientKey = data.client_key;
+        if (!clientKey) {
+            // Call our server-side proxy to handle creation/reset securely and avoid CORS
+            const response = await fetch("/api/did/key", {
+                method: "POST"
+            });
+
+            if (!response.ok) {
+                 const errorData = await response.json();
+                 console.error("D-ID Proxy Error:", errorData);
+                 throw new Error(`Auth failed: ${errorData.error || response.statusText}`);
+            }
+            
+            const data = await response.json();
+            clientKey = data.client_key;
+            localStorage.setItem('did_client_key', clientKey!);
+        }
 
         // 2. Get or Create Agent
         // Ideally we use a persistent ID. For now, we'll try to find one or create one.
@@ -77,10 +77,16 @@ export default function DidAvatar({ isActive, onClose }: DidAvatarProps) {
         
         if (!agentId) {
              setConnectionStatus('PROVISIONING_AVATAR...');
+             // Compute auth header once
+             let authHeader = apiKey.startsWith('Basic ') ? apiKey : `Basic ${apiKey}`;
+             if (apiKey.includes(':') && !apiKey.startsWith('Basic ')) {
+                 authHeader = `Basic ${btoa(apiKey)}`;
+             }
+
              const agentResp = await fetch("https://api.d-id.com/agents", {
                  method: "POST",
                  headers: {
-                     "Authorization": `Basic ${apiKey}`,
+                     "Authorization": authHeader,
                      "Content-Type": "application/json"
                  },
                  body: JSON.stringify({
@@ -92,9 +98,12 @@ export default function DidAvatar({ isActive, onClose }: DidAvatarProps) {
                      },
                      "llm": {
                          "type": "openai",
+                         // We are using our own agent logic, so maybe 'd-id-agent' type or just 'talk'?
+                         // Actually for SDK streaming we usually need an ID. 
+                         // If this fails, we might need to check the payload structure.
                          "provider": "openai",
-                         "model": "gpt-3.5-turbo",
-                         "instructions": "You are Franky, a futuristic holographic interface assistant. Be concise."
+                         "model": "gpt-4o-mini",
+                         "instructions": "You are Franky, a futuristic holographic interface assistant."
                      }
                  })
              });
@@ -104,7 +113,9 @@ export default function DidAvatar({ isActive, onClose }: DidAvatarProps) {
                  agentId = agentData.id;
                  localStorage.setItem('did_agent_id', agentId as string);
              } else {
-                 throw new Error("Failed to provision new avatar agent.");
+                 const errorText = await agentResp.text();
+                 console.error("Agent Creation Failed:", agentResp.status, errorText);
+                 throw new Error(`Failed to provision new avatar agent: ${agentResp.status} ${errorText}`);
              }
         }
 
@@ -129,7 +140,7 @@ export default function DidAvatar({ isActive, onClose }: DidAvatarProps) {
         };
 
         const agentMgr = await did.createAgentManager(agentId!, { 
-             auth: { type: 'key', clientKey: clientKey }, 
+             auth: { type: 'key', clientKey: clientKey || '' }, 
              callbacks 
         });
 
