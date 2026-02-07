@@ -1,7 +1,9 @@
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import styles from '../ui/HolographicOS.module.scss';
-// Dynamically import SDK to avoid SSR issues if necessary, or just import if client-only
 import * as did from '@d-id/client-sdk';
+import { ASSETS, CONFIG } from '../../config/assets';
 
 interface DidAvatarProps {
   isActive: boolean;
@@ -9,18 +11,19 @@ interface DidAvatarProps {
 }
 
 export default function DidAvatar({ isActive, onClose }: DidAvatarProps) {
-  const [apiKey, setApiKey] = useState('');
-  const [clientKey, setClientKey] = useState('');
   const [agentManager, setAgentManager] = useState<any>(null);
   const [connectionStatus, setConnectionStatus] = useState<string>('DISCONNECTED');
   const [chatInput, setChatInput] = useState('');
   const [messages, setMessages] = useState<{role: string, content: string}[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasError, setHasError] = useState(false);
 
+  // Auto-connect when active
   useEffect(() => {
-    const storedKey = localStorage.getItem('did_api_key');
-    if (storedKey) setApiKey(storedKey);
-  }, []);
+    if (isActive && !agentManager && !hasError) {
+        connectToAgent();
+    }
+  }, [isActive, agentManager, hasError]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -31,64 +34,49 @@ export default function DidAvatar({ isActive, onClose }: DidAvatarProps) {
     };
   }, [agentManager]);
 
-  const generateClientKey = async () => {
-    if (!apiKey) return;
-    setConnectionStatus('GENERATING_KEY');
-    localStorage.setItem('did_api_key', apiKey);
-
-    try {
-      // Exchange Basic Auth API Key for restricted Client Key
-      // NOTE: In a production app, this should be done on a secure backend!
-      const response = await fetch("https://api.d-id.com/agents/client-key", {
-        method: "POST",
-        headers: {
-          "Authorization": `Basic ${apiKey}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          allowed_domains: [window.location.origin] 
-        })
-      });
-
-      if (!response.ok) throw new Error(`Failed to get client key: ${response.statusText}`);
-      
-      const data = await response.json();
-      if (data.client_key) {
-        setClientKey(data.client_key);
-        initializeAgent(data.client_key);
-      } else {
-        throw new Error("No client_key returned");
-      }
-    } catch (err: any) {
-      console.error(err);
-      setConnectionStatus(`ERROR: ${err.message}`);
+  const connectToAgent = async () => {
+    const apiKey = CONFIG.did.apiKey;
+    
+    if (!apiKey) {
+        setConnectionStatus('ERROR: Missing API Key in .env');
+        setHasError(true);
+        return;
     }
-  };
 
-  const initializeAgent = async (cKey: string) => {
-    if (!videoRef.current) return;
-    setConnectionStatus('INITIALIZING_SDK');
+    setConnectionStatus('SECURING_UPLINK...');
 
     try {
-        // Hardcoded Agent ID for demo - user might need to create one first or we use a public one if available?
-        // The user docs say: "const agentId = 'agt_abc123';"
-        // We probably need to CREATE an agent first or ask user for Agent ID. 
-        // For the "Avatar Scenario", let's assume we need to create one or user has one.
-        // Actually, let's try to CREATE an agent on the fly if we don't have one, 
-        // or asking the user might be too complex. 
-        // Let's use a known default or create one. 
-        // Docs: "Create an agent... POST /agents" -> Returns agent_id.
-        // Let's allow user to input Agent ID or use a default one I can try to create.
+        // 1. Get Client Key (Secure Proxy pattern recommended for production, but using direct Basic Auth for demo)
+        const response = await fetch("https://api.d-id.com/agents/client-key", {
+            method: "POST",
+            headers: {
+                "Authorization": `Basic ${apiKey}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                 // In production, this should be strict
+                allowed_domains: [window.location.origin] 
+            })
+        });
+
+        if (!response.ok) {
+             if (response.status === 401) throw new Error("Invalid API Key");
+             throw new Error(`Auth failed: ${response.statusText}`);
+        }
         
-        // Wait, for V2 streams/Talks we didn't need Agent ID. 
-        // But SDK says "createAgentManager(agentId, ...)"
-        // Let's try to create a standard agent first.
+        const data = await response.json();
+        const clientKey = data.client_key;
+
+        // 2. Get or Create Agent
+        // Ideally we use a persistent ID. For now, we'll try to find one or create one.
+        // Simplified: Just create a fresh session for this "Talk" or use a known ID if you have one.
+        // NOTE: 'createAgentManager' typically needs an existing Agent ID. 
+        // We will try to create a *new* agent if we don't have one stored.
         
         let agentId = localStorage.getItem('did_agent_id');
         
         if (!agentId) {
-             setConnectionStatus('CREATING_AGENT');
-             // Create a new Agent
+             setConnectionStatus('PROVISIONING_AVATAR...');
              const agentResp = await fetch("https://api.d-id.com/agents", {
                  method: "POST",
                  headers: {
@@ -98,7 +86,7 @@ export default function DidAvatar({ isActive, onClose }: DidAvatarProps) {
                  body: JSON.stringify({
                      "presenter": {
                          "type": "talk",
-                         "voice": { "type": "microsoft", "voice_id": "en-US-JennyNeural" },
+                         "voice": { "type": "microsoft", "voice_id": CONFIG.did.defaultVoice },
                          "thumbnail": "https://create-images-results.d-id.com/DefaultPresenters/Emma_f/image.jpeg",
                          "source_url": "https://create-images-results.d-id.com/DefaultPresenters/Emma_f/image.jpeg"
                      },
@@ -106,60 +94,57 @@ export default function DidAvatar({ isActive, onClose }: DidAvatarProps) {
                          "type": "openai",
                          "provider": "openai",
                          "model": "gpt-3.5-turbo",
-                         "instructions": "You are a futuristic holographic interface assistant named Franky. Keep answers short and technical."
+                         "instructions": "You are Franky, a futuristic holographic interface assistant. Be concise."
                      }
                  })
              });
+             
              if (agentResp.ok) {
                  const agentData = await agentResp.json();
                  agentId = agentData.id;
                  localStorage.setItem('did_agent_id', agentId as string);
              } else {
-                 console.warn("Failed to create agent, trying connection anyway if ID exists...");
+                 throw new Error("Failed to provision new avatar agent.");
              }
         }
 
-        if (!agentId) throw new Error("Could not obtain Agent ID");
-
+        // 3. Initialize SDK
         const callbacks = {
-          onSrcObjectReady(value: any) {
-            if (videoRef.current) {
-                videoRef.current.srcObject = value;
-            }
-          },
-          onConnectionStateChange(state: string) {
-            setConnectionStatus(state);
-          },
-          onNewMessage(messages: any[], type: string) {
-             // D-ID sends array of messages
-             const newMsgs = messages.map(m => ({
-                 role: m.role, 
-                 content: m.content
-             }));
-             setMessages(prev => [...prev, ...newMsgs]);
-          },
-          onError(error: any) {
-              console.error("Agent Error:", error);
-              setConnectionStatus(`ERROR: ${error.message || 'Unknown'}`);
-          }
+             onSrcObjectReady(value: any) {
+               if (videoRef.current) {
+                   videoRef.current.srcObject = value;
+               }
+             },
+             onConnectionStateChange(state: string) {
+               setConnectionStatus(state);
+             },
+             onNewMessage(msgs: any[], type: string) {
+                const newMsgs = msgs.map(m => ({ role: m.role, content: m.content }));
+                setMessages(prev => [...prev, ...newMsgs]);
+             },
+             onError(error: any) {
+                 console.error("Agent Error:", error);
+                 setConnectionStatus(`ERROR: ${error.message || 'Stream Failed'}`);
+             }
         };
 
-        const agentMgr = await did.createAgentManager(agentId, { 
-            auth: { type: 'key', clientKey: cKey }, 
-            callbacks 
+        const agentMgr = await did.createAgentManager(agentId!, { 
+             auth: { type: 'key', clientKey: clientKey }, 
+             callbacks 
         });
 
         setAgentManager(agentMgr);
         
-        setConnectionStatus('CONNECTING_RTC');
+        setConnectionStatus('ESTABLISHING_NEURAL_LINK...');
         await agentMgr.connect();
         setConnectionStatus('CONNECTED');
         
-        await agentMgr.speak({ type: "text", input: "Holographic Interface Online. Ready." });
+        await agentMgr.speak({ type: "text", input: "Systems Online." });
 
     } catch (err: any) {
         console.error(err);
-        setConnectionStatus(`SDK ERROR: ${err.message}`);
+        setConnectionStatus(`CONNECTION_FAILED: ${err.message}`);
+        setHasError(true);
     }
   };
 
@@ -180,7 +165,6 @@ export default function DidAvatar({ isActive, onClose }: DidAvatarProps) {
           await agentManager.disconnect();
           setAgentManager(null);
       }
-      setConnectionStatus('DISCONNECTED');
       onClose();
   };
 
@@ -206,7 +190,7 @@ export default function DidAvatar({ isActive, onClose }: DidAvatarProps) {
       fontFamily: 'Orbitron, sans-serif'
     }}>
       <div className={styles.windowHeader}>
-         <h3>D-ID_AGENT_UPLINK</h3>
+         <h3>DID_AGENT_AXIOM</h3>
          <div className={styles.windowControls}>
              <span className={styles.close} onClick={handleDisconnect}>×</span>
          </div>
@@ -217,46 +201,43 @@ export default function DidAvatar({ isActive, onClose }: DidAvatarProps) {
           height: '300px', 
           background: '#000', 
           position: 'relative',
-          borderBottom: '1px solid rgba(0,255,157,0.3)'
+          borderBottom: '1px solid rgba(0,255,157,0.3)',
+          overflow: 'hidden'
       }}>
+         {/* Background / Idle Video */}
+         <video 
+            src={ASSETS.avatar.idleVideo}
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+            style={{ 
+                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover',
+                opacity: connectionStatus === 'CONNECTED' ? 0 : 0.5 // Fade out idle when connected? Or keep as backup?
+                // Actually D-ID usually replaces the srcObject. 
+                // We show this ONLY if stream is not ready yet?
+            }} 
+         />
+         
+         {/* Live Stream Video */}
          <video 
             ref={videoRef} 
             autoPlay 
             playsInline 
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            style={{ 
+                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover',
+                zIndex: 10,
+                opacity: connectionStatus === 'CONNECTED' ? 1 : 0
+            }} 
          />
-         {!agentManager && connectionStatus === 'DISCONNECTED' && (
-             <div style={{
-                 position: 'absolute', top:0, left:0, width:'100%', height:'100%',
-                 display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column',
-                 padding: '20px'
-             }}>
-                 <p style={{marginBottom: '10px'}}>SECURE_KEY REQUIRED</p>
-                 <input 
-                    type="password" 
-                    placeholder="D-ID API Key (Basic Auth)" 
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    style={{
-                        width: '100%',
-                        background: 'rgba(0,0,0,0.5)',
-                        border: '1px solid #00ff9d',
-                        color: '#fff',
-                        padding: '8px',
-                        marginBottom: '10px'
-                    }}
-                 />
-                 <button className={styles.actionLink} onClick={generateClientKey}>
-                    INITIALIZE_AGENT
-                 </button>
-             </div>
-         )}
-         {connectionStatus !== 'DISCONNECTED' && connectionStatus !== 'CONNECTED' && (
+
+         {connectionStatus !== 'CONNECTED' && (
               <div style={{
                   position: 'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)',
-                  background:'rgba(0,0,0,0.7)', padding:'10px'
+                  background:'rgba(0,0,0,0.7)', padding:'10px', zIndex: 20,
+                  whiteSpace: 'nowrap'
               }}>
-                  {connectionStatus}...
+                  {connectionStatus}
               </div>
          )}
       </div>
@@ -272,6 +253,12 @@ export default function DidAvatar({ isActive, onClose }: DidAvatarProps) {
               flexDirection: 'column',
               gap: '8px'
           }}>
+              {messages.length === 0 && (
+                  <div style={{ opacity: 0.5, textAlign: 'center', marginTop: '20px' }}>
+                      <p>SECURE CHANNEL ESTABLISHED.</p>
+                      <p>AWAITING INPUT...</p>
+                  </div>
+              )}
               {messages.map((m, i) => (
                   <div key={i} style={{ 
                       alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
@@ -291,8 +278,8 @@ export default function DidAvatar({ isActive, onClose }: DidAvatarProps) {
                  value={chatInput}
                  onChange={(e) => setChatInput(e.target.value)}
                  onKeyDown={(e) => e.key === 'Enter' && handleSendChat()}
-                 placeholder="Transmit Message..."
-                 disabled={connectionStatus !== 'CONNECTED'}
+                 placeholder={agentManager ? "Transmit Message..." : "Authenticating..."}
+                 disabled={!agentManager}
                  style={{
                      flex: 1,
                      background: 'rgba(0,0,0,0.5)',
@@ -304,7 +291,7 @@ export default function DidAvatar({ isActive, onClose }: DidAvatarProps) {
               <button 
                   className={styles.actionLink} 
                   onClick={handleSendChat}
-                  disabled={connectionStatus !== 'CONNECTED'}
+                  disabled={!agentManager}
               >
                   SEND
               </button>

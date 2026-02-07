@@ -46,6 +46,7 @@ export function useVoiceCommands({ onCommand, language }: VoiceCommandProps) {
   const [transcript, setTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const recognitionRef = (typeof window !== 'undefined') ? 
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -158,7 +159,17 @@ export function useVoiceCommands({ onCommand, language }: VoiceCommandProps) {
       };
 
       recognition.onerror = (event: any) => {
-          if (event.error !== 'no-speech') console.error('Voice Error:', event.error);
+          if (event.error !== 'no-speech') {
+              // Special case for permission errors: Suppress console vomit, show UI error
+              if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                  console.warn('Microphone access denied. User must enable permissions.');
+                  setError('MIC_ACCESS_DENIED');
+                  setVoiceMode('OFF');
+              } else {
+                  console.error('Voice Error:', event.error);
+                  setError(`ERROR: ${event.error}`);
+              }
+          }
       };
 
       recognition.onend = () => {
@@ -181,9 +192,13 @@ export function useVoiceCommands({ onCommand, language }: VoiceCommandProps) {
   const startTheSystem = useCallback(() => {
       if (recognitionRef.current) {
           try {
+            setError(null);
             setVoiceMode('STANDBY');
             recognitionRef.current.start();
-          } catch(e) { console.log(e); }
+          } catch(e) { 
+             console.log(e); 
+             setError('START_FAILED');
+          }
       }
   }, []);
 
@@ -194,5 +209,5 @@ export function useVoiceCommands({ onCommand, language }: VoiceCommandProps) {
 
   const isListening = voiceMode !== 'OFF';
 
-  return { isListening, isSupported, transcript, interimTranscript, startTheSystem, stopTheSystem, speak, isSpeaking, voiceMode };
+  return { isListening, isSupported, transcript, interimTranscript, startTheSystem, stopTheSystem, speak, isSpeaking, voiceMode, error };
 }

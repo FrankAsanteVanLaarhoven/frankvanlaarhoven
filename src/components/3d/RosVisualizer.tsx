@@ -2,7 +2,7 @@
 
 import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Html, Text } from "@react-three/drei";
+import { Html } from "@react-three/drei";
 import * as THREE from "three";
 
 export default function RosVisualizer() {
@@ -11,12 +11,18 @@ export default function RosVisualizer() {
 
   // Simulated Lidar Data (Revolving points)
   const particleCount = 1000;
+  // Deterministic random helper to satisfy linter purity checks
+  const seededRandom = (seed: number) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  };
+
   const positions = useMemo(() => {
     const pos = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount; i++) {
-        const theta = Math.random() * Math.PI * 2;
-        const r = 5 + Math.random() * 10; // Radius 5-15 units
-        const y = (Math.random() - 0.5) * 2;
+        const theta = seededRandom(i) * Math.PI * 2;
+        const r = 5 + seededRandom(i + 10000) * 10; // Radius 5-15 units
+        const y = (seededRandom(i + 20000) - 0.5) * 2;
         pos[i * 3] = r * Math.cos(theta);
         pos[i * 3 + 1] = y;
         pos[i * 3 + 2] = r * Math.sin(theta);

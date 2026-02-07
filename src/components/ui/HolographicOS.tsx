@@ -7,8 +7,9 @@ import { useVoiceCommands, LanguageCode } from "../../hooks/useVoiceCommands";
 import { useSoundEffects } from "../../hooks/useSoundEffects";
 import FrankyAvatar from "../3d/FrankyAvatar";
 import DidAvatar from "../3d/DidAvatar";
+import VlaSimulationPanel from "../simulation/VlaSimulation";
 
-type WindowId = "books" | "services" | "terminal" | "research" | "comms" | "projects" | "presence" | null;
+type WindowId = "books" | "services" | "terminal" | "research" | "comms" | "projects" | "presence" | "simulation" | null;
 
 export default function HolographicOS() {
   const [activeWindow, setActiveWindow] = useState<WindowId>(null);
@@ -55,6 +56,7 @@ export default function HolographicOS() {
         if (lowerCmd.includes("open communications") || lowerCmd.includes("open contact")) { speak("Opening Secure Channel."); setActiveWindow("comms"); return; }
         if (lowerCmd.includes("activate presence") || lowerCmd.includes("video link")) { speak("Establishing Video Uplink."); setActiveWindow("presence"); return; }
         if (lowerCmd.includes("open terminal")) { speak("Initializing CLI."); setActiveWindow("terminal"); return; }
+        if (lowerCmd.includes("open simulation") || lowerCmd.includes("connect vla") || lowerCmd.includes("robot link")) { speak("Connecting to VLA Simulation."); setActiveWindow("simulation"); return; }
         if (lowerCmd.includes("close") || lowerCmd.includes("close all")) { speak("Terminating sessions."); setActiveWindow(null); return; }
     }
 
@@ -82,7 +84,7 @@ export default function HolographicOS() {
   }, [language, speak]);
   /* eslint-enable react-hooks/exhaustive-deps */
 
-  const { isListening, isSupported, startTheSystem, stopTheSystem, interimTranscript, voiceMode, isSpeaking } = useVoiceCommands({ onCommand: handleVoiceCommand, language });
+  const { isListening, isSupported, startTheSystem, stopTheSystem, interimTranscript, voiceMode, isSpeaking, error } = useVoiceCommands({ onCommand: handleVoiceCommand, language });
   const { playHover, playClick } = useSoundEffects();
 
   return (
@@ -96,7 +98,7 @@ export default function HolographicOS() {
                     {voiceMode === 'ACTIVE' ? '||||||||' : '...'}
                 </span>
                 <span className={styles.transcript}>
-                    {voiceMode === 'STANDBY' ? "Waiting for 'Franky'..." : (interimTranscript || "Listening...")}
+                    {error ? <span style={{color: '#ff4444'}}>{error}</span> : (voiceMode === 'STANDBY' ? "Waiting for 'Franky'..." : (interimTranscript || "Listening..."))}
                 </span>
             </div>
         )}
@@ -165,6 +167,15 @@ export default function HolographicOS() {
           <span className={styles.label}>COMM_LINK</span>
         </button>
         <button 
+            onClick={() => { playClick(); toggleWindow("simulation"); }} 
+            onMouseEnter={playHover}
+            className={styles.toolButton} 
+            aria-label="Open VLA Simulation"
+        >
+          <span className={styles.icon}>🕹️</span>
+          <span className={styles.label}>VLA_SIM</span>
+        </button>
+        <button 
             onClick={() => { playClick(); toggleWindow("presence"); }} 
             onMouseEnter={playHover}
             className={styles.toolButton} 
@@ -218,7 +229,7 @@ export default function HolographicOS() {
                <div className={styles.bookItem}>
                  <h4>The Cognitive Divide</h4>
                  <p>&quot;Re-conceptualising programming in the Era of AI.&quot;</p>
-                 <button className={styles.actionLink} onClick={() => window.open('https://www.amazon.co.uk/s?k=the+cognitive+divide&crid=30GCNNFXOR5FH&sprefix=the+cognitive+divide%2Caps%2C101&ref=nb_sb_noss', '_blank')}>READ_ON_AMAZON</button>
+                 <button className={styles.actionLink} onClick={() => window.open('https://www.amazon.co.uk/Cognitive-Divide-Re-conceptualising-programming-Intelligence-ebook/dp/B0FMSBB2ZL/ref=sr_1_1?crid=18G3J5PSORC7Q&dib=eyJ2IjoiMSJ9.2_Rh3gmP7IC7tZnmXPROwijXk-wB3GzWg38ySeQqmF_hR1UzpruZgMfT3L32gW8tEFPi_yR-qIbQZiGZMzG4jtWWkFRPAUvnCGZj1h2n43cPdrF1C9zOp9CRmk9dUKZVG9J0BMz0owOfEmmpfAsNlVdu0sVxLWtUIm5o3Zm0VrDVdlJawxKef4u2xyYxZCcBb2qGQVxoMWQ88JBvif7R8ngYhXHvv3MMmrfs1HGhtUESWKdTV7NpKYHXX-B647o9OAINrDUD16noWgVU1dQZ6nLcouya3yFrpGwfBPAhSiU.e4rg9qktxnb2RRGv9EP2CuMlnH7D2WwpNBaZCqcJhOA&dib_tag=se&keywords=THE+COGNITIVE+DIVIDE&qid=1770443924&s=amazon-devices&sprefix=the+cognitive+divide%2Camazon-devices%2C129&sr=1-1', '_blank')}>READ_ON_AMAZON</button>
                </div>
                <div className={styles.bookItem}>
                  <h4>Navigation Bible</h4>
@@ -298,7 +309,7 @@ export default function HolographicOS() {
                  <h4>Human-Robot Alignment via Haptic Feedback</h4>
                  <div style={{ fontSize: '0.8rem', opacity: 0.7, marginBottom: '5px' }}>Project • MIT Media Lab Collab</div>
                  <p>&quot;Latency-free force feedback for teleoperation safety.&quot;</p>
-                 <button className={styles.actionLink} onClick={() => alert('OPENING_SIMULATION_STREAM...')}>VIEW_SIMULATION</button>
+                  <button className={styles.actionLink} onClick={() => setActiveWindow('simulation')}>VIEW_SIMULATION</button>
                </div>
                <button className={styles.actionLink} style={{width: '100%', marginTop: '10px'}} onClick={() => window.location.href = 'mailto:research@frankvanlaarhoven.com'}>
                   COLLABORATE_ON_RESEARCH
@@ -407,6 +418,27 @@ export default function HolographicOS() {
                         ENCRYPTION: AES-256
                         <br/>&gt; CHANNEL_OPEN...
                     </div>
+                </div>
+            </motion.div>
+        )}
+
+        {/* VLA Simulation Module */}
+        {activeWindow === "simulation" && (
+            <motion.div
+                className={`${styles.window} ${styles.glassPanel}`}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                drag
+                style={{ width: '900px', height: '600px', maxWidth: '95vw', maxHeight: '90vh' }}
+            >
+                <div className={styles.windowHeader}>
+                    <h3>VLA_SIMULATION_LINK</h3>
+                    <div className={styles.windowControls}>
+                        <span className={styles.close} onClick={() => setActiveWindow(null)}>×</span>
+                    </div>
+                </div>
+                <div className={styles.windowContent} style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                    <VlaSimulationPanel />
                 </div>
             </motion.div>
         )}
