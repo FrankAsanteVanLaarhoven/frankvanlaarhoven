@@ -72,7 +72,7 @@ const DigitalRainMaterial = shaderMaterial(
       
       vec3 pos = position;
       // Fall down based on time + speed + offset
-      float y = pos.y - mod(uTime * aSpeed * 5.0 + aOffset, 80.0);
+      float y = pos.y - mod(uTime * aSpeed * 2.0 + aOffset, 80.0);
       
       // Reset Y if too low (wrap around) 
       // Range is roughly 80 to -80

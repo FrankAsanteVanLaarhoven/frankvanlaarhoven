@@ -117,11 +117,16 @@ export function useVoiceCommands({ onCommand, language }: VoiceCommandProps) {
       recognitionRef.current = recognition;
 
       recognition.onresult = (event: any) => {
+          if (!event || !event.results) return;
+
           let interim = '';
           let final = '';
           for (let i = event.resultIndex; i < event.results.length; ++i) {
-              if (event.results[i].isFinal) final += event.results[i][0].transcript;
-              else interim += event.results[i][0].transcript;
+              const result = event.results[i];
+              if (!result || !result[0]) continue;
+              
+              if (result.isFinal) final += result[0].transcript;
+              else interim += result[0].transcript;
           }
 
           const lowerInterim = interim.toLowerCase();

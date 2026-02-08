@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import styles from "./HolographicOS.module.scss";
 import { useVoiceCommands, LanguageCode } from "../../hooks/useVoiceCommands";
 import { useSoundEffects } from "../../hooks/useSoundEffects";
@@ -14,6 +14,16 @@ type WindowId = "books" | "services" | "terminal" | "research" | "comms" | "proj
 export default function HolographicOS() {
   const [activeWindow, setActiveWindow] = useState<WindowId>(null);
   const [language, setLanguage] = useState<LanguageCode>('en-US');
+  const [terminalHistory, setTerminalHistory] = useState<Array<{ role: 'user' | 'agent', content: string }>>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const terminalRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll terminal
+  useEffect(() => {
+    if (terminalRef.current) {
+        terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  }, [terminalHistory]);
 
 
   const toggleWindow = (id: WindowId) => {
@@ -89,6 +99,10 @@ export default function HolographicOS() {
 
   return (
     <div className={styles.osLayer}>
+      {/* System Logo */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/assets/logo.png" alt="System Logo" className={styles.logo} />
+
       {/* Dynamic "Ephemeral" Toolbar */}
       <nav className={styles.toolbar}>
         {/* Real-time Voice Feedback Display */}
@@ -343,11 +357,17 @@ export default function HolographicOS() {
                     <h4 style={{ borderBottom: '1px solid rgba(0, 255, 157, 0.3)', paddingBottom: '5px', marginBottom: '10px', color: '#00ff9d' }}>STARTUP_VENTURES</h4>
                     <ul className={styles.serviceList}>
                         <li><a href="https://oracleiqtrader.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🔮 OracleIQ Trader</a></li>
-                        <li><a href="https://atlassupplychainos.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🌍 Atlas Supply Chain OS</a></li>
-                        <li><a href="https://nava-ai.cloud" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🧠 NAVA AI Cloud</a></li>
                         <li><a href="https://telixar.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>📡 Telixar</a></li>
                         <li><a href="https://aethonai.io" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🦅 Aethon AI</a></li>
                         <li><a href="https://retrofitforge.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>⚙️ Retrofit Forge</a></li>
+                    </ul>
+
+                    {/* OS Section */}
+                    <h4 style={{ borderBottom: '1px solid rgba(255, 165, 0, 0.3)', paddingBottom: '5px', marginTop: '20px', marginBottom: '10px', color: '#FFA500' }}>OPERATING_SYSTEMS</h4>
+                    <ul className={styles.serviceList}>
+                         <li><a href="https://atlassupplychainos.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🌍 Atlas Supply Chain OS</a></li>
+                         <li><a href="https://nava-ai.cloud" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🧠 NAVA AI Cloud</a></li>
+                         <li><a href="http://navaaios.com/" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🖥️ NAVA AI OS</a></li>
                     </ul>
 
                     {/* SaaS Section */}
@@ -463,26 +483,63 @@ export default function HolographicOS() {
                     </div>
                 </div>
                 <div className={styles.terminalContent}>
-                    <div className={styles.terminalOutput}>
+                    <div className={styles.terminalOutput} ref={terminalRef} style={{ overflowY: 'auto', maxHeight: '300px' }}>
                         <p>&gt; SYSTEM_READY...</p>
-                        <p>&gt; LISTENING_FOR_INTENT...</p>
-                        <p className={styles.hint}>Try: &quot;open books&quot;, &quot;open services&quot;, &quot;status&quot;</p>
+                        <p>&gt; CONNECTED_TO_VLA_NODE...</p>
+                        {terminalHistory.map((msg, i) => (
+                            <p key={i} style={{ color: msg.role === 'user' ? '#fff' : '#00ff88', margin: '5px 0' }}>
+                                {msg.role === 'user' ? (
+                                    <span><span style={{color: '#aaa'}}>user@nexus:~$</span> {msg.content}</span>
+                                ) : (
+                                    <span>&gt; {msg.content}</span>
+                                )}
+                            </p>
+                        ))}
+                        {isProcessing && <p style={{ color: '#00ff88', animation: 'blink 1s infinite' }}>&gt; PROCESSING_NEURAL_REQUEST...</p>}
                     </div>
                     <div className={styles.inputLine}>
                         <span className={styles.prompt}>user@nexus:~$</span>
                         <input 
                             type="text" 
                             className={styles.cmdInput} 
-                            placeholder="Type command..."
+                            placeholder={isProcessing ? "Processing..." : "Type command..."}
                             autoFocus
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    const val = e.currentTarget.value.trim().toLowerCase();
+                            disabled={isProcessing}
+                            onKeyDown={async (e) => {
+                                if (e.key === 'Enter' && !isProcessing) {
+                                    const val = e.currentTarget.value.trim();
+                                    if (!val) return;
+                                    
                                     e.currentTarget.value = '';
-                                    if (val === 'open books') setActiveWindow('books');
-                                    if (val === 'open services') setActiveWindow('services');
-                                    if (val === 'status') alert('SYSTEM STATUS: OPTIMAL');
-                                    // In a real app, we'd append the command to the output history
+                                    setTerminalHistory(prev => [...prev, { role: 'user', content: val }]);
+                                    setIsProcessing(true);
+
+                                    // Local fast-path commands
+                                    if (val.toLowerCase() === 'clear') {
+                                        setTerminalHistory([]);
+                                        setIsProcessing(false);
+                                        return;
+                                    }
+
+                                    try {
+                                        const response = await fetch('/api/agent', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ query: val, lang: language.split('-')[0] })
+                                        });
+                                        const data = await response.json();
+                                        
+                                        setTerminalHistory(prev => [...prev, { role: 'agent', content: data.text || "Command executed." }]);
+                                        
+                                        if (data.action) {
+                                            if (data.action === 'close') setActiveWindow(null);
+                                            else setActiveWindow(data.action);
+                                        }
+                                    } catch (err) {
+                                        setTerminalHistory(prev => [...prev, { role: 'agent', content: "ERROR: NEURAL_LINK_FAILURE" }]);
+                                    } finally {
+                                        setIsProcessing(false);
+                                    }
                                 }
                             }}
                         />
