@@ -24,6 +24,9 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
+      {/* Interaction Handlers - Always visible */}
+      <GestureCursor />
+
       {showMetaverse ? (
         <MetaverseContainer onExit={() => setShowMetaverse(false)} />
       ) : (
@@ -38,7 +41,7 @@ export default function Home() {
           <HolographicOS />
           
           {/* Interaction Handlers */}
-          <GestureCursor />
+
           
           {/* Metaverse Launcher Button (Temporary UI) */}
           <button 
