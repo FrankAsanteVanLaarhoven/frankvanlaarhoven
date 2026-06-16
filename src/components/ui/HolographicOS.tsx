@@ -343,46 +343,48 @@ export default function HolographicOS() {
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 drag
-                style={{ width: '500px' }} // Wider for portfolio
+                style={{ width: '520px' }}
             >
                 <div className={styles.windowHeader}>
-                    <h3>PROJECT_ARCHIVES_V1</h3>
+                    <h3>VERIFIED_ENGINEERING_PROJECTS</h3>
                     <div className={styles.windowControls}>
                         <span className={styles.close} onClick={() => setActiveWindow(null)}>×</span>
                     </div>
                 </div>
                 <div className={styles.windowContent} style={{ maxHeight: '600px', overflowY: 'auto' }}>
-                    
-                    {/* Startups Section */}
-                    <h4 style={{ borderBottom: '1px solid rgba(0, 255, 157, 0.3)', paddingBottom: '5px', marginBottom: '10px', color: '#00ff9d' }}>STARTUP_VENTURES</h4>
-                    <ul className={styles.serviceList}>
-                        <li><a href="https://oracleiqtrader.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🔮 OracleIQ Trader</a></li>
-                        <li><a href="https://telixar.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>📡 Telixar</a></li>
-                        <li><a href="https://aethonai.io" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🦅 Aethon AI</a></li>
-                        <li><a href="https://retrofitforge.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>⚙️ Retrofit Forge</a></li>
-                    </ul>
 
-                    {/* OS Section */}
-                    <h4 style={{ borderBottom: '1px solid rgba(255, 165, 0, 0.3)', paddingBottom: '5px', marginTop: '20px', marginBottom: '10px', color: '#FFA500' }}>OPERATING_SYSTEMS</h4>
-                    <ul className={styles.serviceList}>
-                         <li><a href="https://atlassupplychainos.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🌍 Atlas Supply Chain OS</a></li>
-                         <li><a href="https://nava-ai.cloud" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🧠 NAVA AI Cloud</a></li>
-                         <li><a href="http://navaaios.com/" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🖥️ NAVA AI OS</a></li>
-                    </ul>
+                    <div className={styles.bookItem}>
+                        <h4>QuantX OS</h4>
+                        <div style={{ fontSize: '0.8rem', opacity: 0.7, marginBottom: '6px' }}>FastAPI · Next.js · AWS ECS Fargate · RDS · CloudFront · Terraform · CI/CD</div>
+                        <p>Production financial signal platform — walk-forward ML ensemble, portfolio digital twin, and eToro universe ranking. Deployed to AWS with a full CI/CD gate (pytest, Trivy, Playwright). 72 tests passing, <code>v1.0.0-dev</code> live.</p>
+                        <button className={styles.actionLink} onClick={() => window.open('/case-studies#quantx', '_blank')}>VIEW_CASE_STUDY</button>
+                    </div>
 
-                    {/* SaaS Section */}
-                    <h4 style={{ borderBottom: '1px solid rgba(0, 204, 255, 0.3)', paddingBottom: '5px', marginTop: '20px', marginBottom: '10px', color: '#00ccff' }}>SaaS_PLATFORMS</h4>
-                    <ul className={styles.serviceList}>
-                        <li><a href="https://rovyn.io" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>☁️ Rovyn.io</a></li>
-                    </ul>
+                    <div className={styles.bookItem}>
+                        <h4>InfraConnect AI</h4>
+                        <div style={{ fontSize: '0.8rem', opacity: 0.7, marginBottom: '6px' }}>Python · ROS2 · Isaac Sim · Gazebo · MuJoCo · Helm · Kubernetes</div>
+                        <p>Execution-time spatial safety layer for multi-environment robotic systems. ExecutionGuard blocks unsafe commands synchronously on the action path before any publisher is reached. 205/205 tests passing, 43/43 connector tests, Helm render clean.</p>
+                        <button className={styles.actionLink} onClick={() => window.open('/case-studies#infraconnect', '_blank')}>VIEW_CASE_STUDY</button>
+                    </div>
 
-                    {/* Personal Section */}
-                    <h4 style={{ borderBottom: '1px solid rgba(255, 0, 255, 0.3)', paddingBottom: '5px', marginTop: '20px', marginBottom: '10px', color: '#ff00ff' }}>PERSONAL_INITIATIVES</h4>
-                    <ul className={styles.serviceList}>
-                        <li><a href="https://frankvanlaarhoven.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>👨‍💻 Frank van Laarhoven</a></li>
-                        <li><a href="https://cognitivedivideai.com" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🧩 Cognitive Divide AI</a></li>
-                        <li><a href="https://programmingintelligence.org" target="_blank" rel="noopener noreferrer" className={styles.actionLink} style={{display:'block', textAlign:'left'}}>🎓 Programming Intelligence</a></li>
-                    </ul>
+                    <div className={styles.bookItem}>
+                        <h4>FleetSafe / GNM-VLNVerse</h4>
+                        <div style={{ fontSize: '0.8rem', opacity: 0.7, marginBottom: '6px' }}>Isaac Sim · ROS2 · Python · W&B · HuggingFace · VLA Navigation</div>
+                        <p>Reproducible GNM baseline for visual goal navigation on VLNVerse/Kujiale indoor scenes. Validates 238 training trajectories, RGB-pose evidence, local waypoint derivation, and GNM-format conversion in Isaac Sim.</p>
+                        <button className={styles.actionLink} onClick={() => window.open('/case-studies#fleetsafe', '_blank')}>VIEW_CASE_STUDY</button>
+                    </div>
+
+                    <div className={styles.bookItem}>
+                        <h4>PetClinic Cloud DevOps</h4>
+                        <div style={{ fontSize: '0.8rem', opacity: 0.7, marginBottom: '6px' }}>EKS · ArgoCD · Helm · Terraform · RDS MySQL · ALB · GitHub Actions</div>
+                        <p>AWS cloud-native deployment of Spring Petclinic Microservices — 8 Spring Boot services on EKS 1.29 (Graviton). Terraform modules for EKS, RDS, ECR, Karpenter autoscaling, and GitHub OIDC. GitOps delivery via ArgoCD.</p>
+                        <button className={styles.actionLink} onClick={() => window.open('/case-studies#petclinic', '_blank')}>VIEW_CASE_STUDY</button>
+                    </div>
+
+                    <div className={styles.statusBox} style={{ marginTop: '10px', fontSize: '0.75rem' }}>
+                        POLICY: Verified projects only — real code, tests, and deployment evidence.
+                        <br />&gt; UNVERIFIED_REPOS_HIDDEN...
+                    </div>
 
                 </div>
             </motion.div>

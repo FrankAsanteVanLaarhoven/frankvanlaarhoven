@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frank van Laarhoven — Portfolio
 
-## Getting Started
+Holographic portfolio site for Frank van Laarhoven — robotics researcher, AI assurance engineer, and cloud DevOps practitioner.
 
-First, run the development server:
+Built with Next.js 16, React 19, Three.js, and Framer Motion. Deployed at [frankvanlaarhoven.com](https://frankvanlaarhoven.com).
+
+---
+
+## Engineering Case Studies
+
+The `/case-studies` page lists verified engineering projects only — real code, tests, and deployment evidence. No placeholders.
+
+| Project | Domain | Evidence |
+| --- | --- | --- |
+| QuantX OS | Financial ML · AWS · CI/CD | 72 tests · 11 E2E · v1.0.0-dev live on ECS |
+| InfraConnect AI | Robotics safety · ROS2 · K8s | 205/205 tests · 43/43 connector tests · Helm clean |
+| FleetSafe / GNM-VLNVerse | VLA navigation · Isaac Sim | 238 trajectories validated · W&B logged |
+| PetClinic Cloud DevOps | EKS · ArgoCD · Terraform | 8 modules · 8 Spring Boot services · GitOps |
+
+---
+
+## Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Portfolio Policy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Only verified projects appear in the PROJECTS window and on `/case-studies`. A project is verified when it has at least one of: source code in a repository, passing tests, a deployment report, or published research evidence. Unverified domains or startup names are not listed.
